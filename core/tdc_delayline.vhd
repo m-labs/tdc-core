@@ -25,7 +25,7 @@ use UNISIM.vcomponents.all;
 
 entity tdc_delayline is
     generic (
-        g_WIDTH : positive := 4 -- number of CARRY4 elements
+        g_WIDTH : positive -- number of CARRY4 elements
     );
     port ( 
          clk_sample_i : in std_logic;

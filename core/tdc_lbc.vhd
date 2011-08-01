@@ -24,7 +24,7 @@ entity tdc_lbc is
     generic (
         -- Number of output bits.
         -- The number of input bits is 2^g_N-1.
-        g_N : positive := 4
+        g_N : positive
     );
     port (
          polarity_i   : in std_logic;
