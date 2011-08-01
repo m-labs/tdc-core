@@ -1,0 +1,8 @@
+Time Domain Converter core for Spartan-6 FPGAs
+==============================================
+
+Directory organization:
+   core/            VHDL sources of the TDC core.
+   demo/            Demonstration design for the SPEC board.
+   doc/             Documentation.
+   tb/              Test benches.
