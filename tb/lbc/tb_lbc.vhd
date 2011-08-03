@@ -17,10 +17,13 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- TODO: test pipelining and polarity inversion
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
+use work.tdc_package.all;
 
 entity tb_lbc is
     generic(
@@ -60,22 +63,26 @@ begin
 end function;
 
 signal clk      : std_logic;
-signal polarity : std_logic;
+signal reset    : std_logic;
 signal d        : std_logic_vector(2**g_N-2 downto 0);
+signal d_bak    : std_logic_vector(2**g_N-2 downto 0);
 signal count    : std_logic_vector(g_N-1 downto 0);
+signal polarity : std_logic;
 
 begin
-    dut: entity work.tdc_lbc
+    cmp_dut: tdc_lbc
         generic map(
-            g_N => g_N
+            g_N   => g_N,
+            g_NIN => 2**g_N-1
         )
         port map(
             clk_i        => clk,
-            polarity_i   => polarity,
+            reset_i      => reset,
             d_i          => d,
-            count_o      => count
+            count_o      => count,
+            polarity_o   => polarity
         );
-    polarity <= '0';
+    reset <= '0';
     process
     variable v_seed1     : positive := 1;
     variable v_seed2     : positive := 2;
@@ -83,6 +90,14 @@ begin
     variable v_int_rand  : integer;
     variable v_stim      : std_logic_vector(0 downto 0); 
     begin
+        -- reset
+        reset <= '1';
+        clk <= '0';
+        wait for 4 ns;
+        clk <= '1';
+        wait for 4 ns;
+        reset <= '0';
+        
         for i in 0 to 2**g_N-1 loop
             -- generate test vector
             for j in 0 to 2**g_N-2 loop
@@ -97,12 +112,17 @@ begin
                     d(j) <= v_stim(0);
                 end if;
             end loop;
+            wait for 0 ns;
+            d_bak <= d;
             -- generate, print and verify output
-            clk <= '0';
-            wait for 4 ns;
-            clk <= '1';
-            wait for 4 ns;
-            report "Vector:" & str(d) & " Expected:" & integer'image(i) & " Result:" & integer'image(to_integer(unsigned(count)));
+            for j in 0 to 1 loop
+                clk <= '0';
+                wait for 4 ns;
+                clk <= '1';
+                wait for 4 ns;
+                d <= (others => '0');
+            end loop;
+            report "Vector:" & str(d_bak) & " Expected:" & integer'image(i) & " Result:" & integer'image(to_integer(unsigned(count))) & "(" & chr(polarity) & ")";
             assert i = to_integer(unsigned(count)) severity failure;
         end loop;
         report "Test passed.";
