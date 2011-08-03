@@ -59,6 +59,7 @@ begin
     return result;
 end function;
 
+signal clk      : std_logic;
 signal polarity : std_logic;
 signal d        : std_logic_vector(2**g_N-2 downto 0);
 signal count    : std_logic_vector(g_N-1 downto 0);
@@ -69,6 +70,7 @@ begin
             g_N => g_N
         )
         port map(
+            clk_i        => clk,
             polarity_i   => polarity,
             d_i          => d,
             count_o      => count
@@ -96,7 +98,10 @@ begin
                 end if;
             end loop;
             -- generate, print and verify output
-            wait for 10 ns;
+            clk <= '0';
+            wait for 4 ns;
+            clk <= '1';
+            wait for 4 ns;
             report "Vector:" & str(d) & " Expected:" & integer'image(i) & " Result:" & integer'image(to_integer(unsigned(count)));
             assert i = to_integer(unsigned(count)) severity failure;
         end loop;

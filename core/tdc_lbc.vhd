@@ -27,6 +27,7 @@ entity tdc_lbc is
         g_N : positive
     );
     port (
+         clk_i        : in std_logic;
          polarity_i   : in std_logic;
          d_i          : in std_logic_vector(2**g_N-2 downto 0);
          count_o      : out std_logic_vector(g_N-1 downto 0)
@@ -70,5 +71,10 @@ end function;
 signal d_x : std_logic_vector(d_i'length-1 downto 0);
 begin
     d_x <= (d_i'length-1 downto 0 => polarity_i) xor d_i;
-    count_o <= f_clo(d_x);
+    process(clk_i)
+    begin
+        if rising_edge(clk_i) then
+            count_o <= f_clo(d_x);
+        end if;
+    end process;
 end architecture;
