@@ -31,20 +31,20 @@ end entity;
 architecture tb of tb_lbc is
 
 function chr(sl: std_logic) return character is
-variable c: character;
+variable v_c: character;
 begin
     case sl is
-        when 'U' => c:= 'U';
-        when 'X' => c:= 'X';
-        when '0' => c:= '0';
-        when '1' => c:= '1';
-        when 'Z' => c:= 'Z';
-        when 'W' => c:= 'W';
-        when 'L' => c:= 'L';
-        when 'H' => c:= 'H';
-        when '-' => c:= '-';
+        when 'U' => v_c:= 'U';
+        when 'X' => v_c:= 'X';
+        when '0' => v_c:= '0';
+        when '1' => v_c:= '1';
+        when 'Z' => v_c:= 'Z';
+        when 'W' => v_c:= 'W';
+        when 'L' => v_c:= 'L';
+        when 'H' => v_c:= 'H';
+        when '-' => v_c:= '-';
     end case;
-return c;
+return v_c;
 end function;
 
 function str(slv: std_logic_vector) return string is
@@ -75,11 +75,11 @@ begin
         );
     polarity <= '0';
     process
-    variable seed1     : positive := 1;
-    variable seed2     : positive := 2;
-    variable rand      : real;
-    variable int_rand  : integer;
-    variable stim      : std_logic_vector(0 downto 0); 
+    variable v_seed1     : positive := 1;
+    variable v_seed2     : positive := 2;
+    variable v_rand      : real;
+    variable v_int_rand  : integer;
+    variable v_stim      : std_logic_vector(0 downto 0); 
     begin
         for i in 0 to 2**g_N-1 loop
             -- generate test vector
@@ -89,10 +89,10 @@ begin
                 elsif j = 2**g_N-2-i then
                     d(j) <= '0';
                 else
-                    uniform(seed1, seed2, rand);
-                    int_rand := integer(trunc(rand*2.0));
-                    stim := std_logic_vector(to_unsigned(int_rand, stim'length));
-                    d(j) <= stim(0);
+                    uniform(v_seed1, v_seed2, v_rand);
+                    v_int_rand := integer(trunc(v_rand*2.0));
+                    v_stim := std_logic_vector(to_unsigned(v_int_rand, v_stim'length));
+                    d(j) <= v_stim(0);
                 end if;
             end loop;
             -- generate, print and verify output
