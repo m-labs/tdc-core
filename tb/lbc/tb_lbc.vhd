@@ -15,6 +15,8 @@
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
 
+-- Copyright (C) 2011 Sebastien Bourdeauducq
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -22,14 +24,14 @@ use ieee.math_real.all;
 
 entity tb_lbc is
     generic(
-        g_N: positive := 5
+        g_N: positive := 6
     );
 end entity;
 
 architecture tb of tb_lbc is
 
 function chr(sl: std_logic) return character is
-variable c : character;
+variable c: character;
 begin
     case sl is
         when 'U' => c:= 'U';
@@ -47,7 +49,7 @@ end function;
 
 function str(slv: std_logic_vector) return string is
 variable result : string (1 to slv'length);
-variable r : integer;
+variable r      : integer;
 begin
     r := 1;
     for i in slv'range loop
@@ -73,10 +75,11 @@ begin
         );
     polarity <= '0';
     process
-    variable seed1, seed2 : positive;
-    variable rand         : real;
-    variable int_rand     : integer;
-    variable stim         : std_logic_vector(0 downto 0); 
+    variable seed1     : positive := 1;
+    variable seed2     : positive := 2;
+    variable rand      : real;
+    variable int_rand  : integer;
+    variable stim      : std_logic_vector(0 downto 0); 
     begin
         for i in 0 to 2**g_N-1 loop
             -- generate test vector
@@ -94,7 +97,7 @@ begin
             end loop;
             -- generate, print and verify output
             wait for 10 ns;
-            report "Vector:" & str(d) & " Expected:" & integer'image(i) & " Result:"& integer'image(to_integer(unsigned(count)));
+            report "Vector:" & str(d) & " Expected:" & integer'image(i) & " Result:" & integer'image(to_integer(unsigned(count)));
             assert i = to_integer(unsigned(count)) severity failure;
         end loop;
         report "Test passed.";
