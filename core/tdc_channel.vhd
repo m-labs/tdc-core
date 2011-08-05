@@ -39,6 +39,8 @@ entity tdc_channel is
          
          -- Signal input.
          signal_i     : in std_logic;
+         calib_i      : in std_logic;
+         calib_sel_i  : in std_logic;
          
          -- Detection outputs.
          detect_o     : out std_logic;
@@ -55,10 +57,14 @@ entity tdc_channel is
 end entity;
 
 architecture rtl of tdc_channel is
+signal muxed_signal          : std_logic;
 signal taps                  : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
 signal polarity, polarity_d1 : std_logic;
 signal raw                   : std_logic_vector(g_RAW_COUNT-1 downto 0);
 begin
+    with signal_i select
+        muxed_signal <= calib_i when '1', signal_i when others;
+    
     cmp_delayline: tdc_delayline
         generic map(
             g_WIDTH => g_CARRY4_COUNT
@@ -66,7 +72,7 @@ begin
         port map(
              clk_i        => clk_i,
              reset_i      => reset_i,
-             signal_i     => signal_i,
+             signal_i     => muxed_signal,
              taps_o       => taps
         );
     
