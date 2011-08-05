@@ -22,6 +22,16 @@ use ieee.std_logic_1164.all;
 
 package tdc_package is
 
+component tdc_ringosc is
+    generic(
+        g_LENGTH: positive
+    );
+    port(
+         en_i  : in std_logic;
+         clk_o : out std_logic
+    );
+end component;
+
 component tdc_lbc is
     generic(
         g_N : positive;

@@ -29,7 +29,7 @@ use work.tdc_package.all;
 entity tdc_delayline is
     generic(
         -- Number of CARRY4 elements.
-        g_WIDTH : positive
+        g_WIDTH: positive
     );
     port(
          clk_i        : in std_logic;
