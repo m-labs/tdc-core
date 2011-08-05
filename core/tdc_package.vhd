@@ -23,7 +23,7 @@ use ieee.std_logic_1164.all;
 package tdc_package is
 
 component tdc_lbc is
-    generic (
+    generic(
         g_N : positive;
         g_NIN: positive
     );

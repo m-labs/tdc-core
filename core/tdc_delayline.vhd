@@ -20,8 +20,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library UNISIM;
-use UNISIM.vcomponents.all;
+library unisim;
+use unisim.vcomponents.all;
+
+library work;
+use work.tdc_package.all;
 
 entity tdc_delayline is
     generic(

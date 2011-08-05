@@ -23,6 +23,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
+
+library work;
 use work.tdc_package.all;
 
 entity tb_lbc is
@@ -37,17 +39,17 @@ function chr(sl: std_logic) return character is
 variable v_c: character;
 begin
     case sl is
-        when 'U' => v_c:= 'U';
-        when 'X' => v_c:= 'X';
-        when '0' => v_c:= '0';
-        when '1' => v_c:= '1';
-        when 'Z' => v_c:= 'Z';
-        when 'W' => v_c:= 'W';
-        when 'L' => v_c:= 'L';
-        when 'H' => v_c:= 'H';
-        when '-' => v_c:= '-';
+        when 'U' => v_c := 'U';
+        when 'X' => v_c := 'X';
+        when '0' => v_c := '0';
+        when '1' => v_c := '1';
+        when 'Z' => v_c := 'Z';
+        when 'W' => v_c := 'W';
+        when 'L' => v_c := 'L';
+        when 'H' => v_c := 'H';
+        when '-' => v_c := '-';
     end case;
-return v_c;
+    return v_c;
 end function;
 
 function str(slv: std_logic_vector) return string is
@@ -84,11 +86,11 @@ begin
         );
     reset <= '0';
     process
-    variable v_seed1     : positive := 1;
-    variable v_seed2     : positive := 2;
-    variable v_rand      : real;
-    variable v_int_rand  : integer;
-    variable v_stim      : std_logic_vector(0 downto 0); 
+    variable v_seed1    : positive := 1;
+    variable v_seed2    : positive := 2;
+    variable v_rand     : real;
+    variable v_int_rand : integer;
+    variable v_stim     : std_logic_vector(0 downto 0); 
     begin
         -- reset
         reset <= '1';

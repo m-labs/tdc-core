@@ -20,8 +20,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library work;
+use work.tdc_package.all;
+
 entity tdc_lbc is
-    generic (
+    generic(
         -- Number of output bits.
         g_N : positive;
         -- Number of input bits. Maximum is 2^g_N-1.

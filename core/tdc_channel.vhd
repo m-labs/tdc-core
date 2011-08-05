@@ -19,22 +19,38 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+library work;
 use work.tdc_package.all;
+use work.genram_pkg.all;
 
 entity tdc_channel is
     generic(
         -- Number of CARRY4 elements.
         g_CARRY4_COUNT : positive;
         -- Number of raw output bits.
-        g_RAW_COUNT    : positive
+        g_RAW_COUNT    : positive;
+        -- Number of fractional part bits.
+        g_FP_COUNT     : positive
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
+         
+         -- Signal input.
          signal_i     : in std_logic;
+         
+         -- Detection outputs.
          detect_o     : out std_logic;
          polarity_o   : out std_logic;
-         raw_o        : out std_logic_vector(g_RAW_COUNT-1 downto 0)
+         raw_o        : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+         fp_o         : out std_logic_vector(g_FP_COUNT-1 downto 0);
+         
+         -- LUT access.
+         lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+         lut_we_i     : in std_logic;
+         lut_d_i      : in std_logic_vector(g_FP_COUNT-1 downto 0);
+         lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0)
     );
 end entity;
 
@@ -54,6 +70,8 @@ begin
              taps_o       => taps
         );
     
+    -- TODO: reorder bits by increasing delays
+    
     cmp_lbc: tdc_lbc
         generic map(
             g_N     => g_RAW_COUNT,
@@ -65,6 +83,32 @@ begin
              d_i          => taps,
              polarity_o   => polarity,
              count_o      => raw
+        );
+    
+    cmp_lut: generic_dpram
+        generic map(
+            g_data_width               => g_FP_COUNT,
+            g_size                     => 2**g_RAW_COUNT,
+            g_with_byte_enable         => false,
+            g_addr_conflict_resolution => "read_first",
+            g_init_file                => "",
+            g_dual_clock               => false
+        )
+        port map(
+            clka_i => clk_i,
+            clkb_i => '0',
+            
+            wea_i  => '0',
+            bwea_i => (others => '0'),
+            aa_i   => raw,
+            da_i   => (others => '0'),
+            qa_o   => fp_o,
+            
+            web_i  => lut_we_i,
+            bweb_i => (others => '0'),
+            ab_i   => lut_a_i,
+            db_i   => lut_d_i,
+            qb_o   => lut_d_o
         );
     
     polarity_o <= polarity_d1;
