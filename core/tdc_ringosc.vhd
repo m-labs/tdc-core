@@ -6,7 +6,7 @@
 --
 -- author: Sebastien Bourdeauducq, sebastien@milkymist.org
 --
--- description: Ring oscillator based on LUT2 primitives
+-- description: Ring oscillator based on LUT primitives
 --
 -- references: http://www.ohwr.org/projects/tdc-core
 --
@@ -32,7 +32,10 @@ entity tdc_ringosc is
         g_LENGTH: positive
     );
     port(
+        -- Enable/reset_n input. The oscillator should be reset at least once.
+        -- When disabled, the output is 0.
          en_i  : in std_logic;
+         -- Oscillator output.
          clk_o : out std_logic
     );
 end entity;
@@ -44,7 +47,8 @@ attribute keep of s: signal is "true";
 begin
     g_luts: for i in 0 to g_LENGTH-1 generate
         g_firstlut: if i = 0 generate
-            cmp_LUT: LUT2 generic map(
+            cmp_LUT: LUT2
+                generic map(
                     INIT => "0100"
                 )
                 port map(
@@ -54,7 +58,8 @@ begin
                 );
          end generate;
          g_nextlut: if i > 0 generate
-            cmp_LUT: LUT1 generic map(
+            cmp_LUT: LUT1
+                generic map(
                     INIT => "01"
                 )
                 port map(

@@ -31,28 +31,34 @@ entity tdc_channel is
         -- Number of raw output bits.
         g_RAW_COUNT    : positive;
         -- Number of fractional part bits.
-        g_FP_COUNT     : positive
+        g_FP_COUNT     : positive;
+        -- Length of the ring oscillator.
+        g_RO_LENGTH    : positive
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
          
          -- Signal input.
-         signal_i     : in std_logic;
-         calib_i      : in std_logic;
-         calib_sel_i  : in std_logic;
+         signal_i    : in std_logic;
+         calib_i     : in std_logic;
+         calib_sel_i : in std_logic;
          
          -- Detection outputs.
-         detect_o     : out std_logic;
-         polarity_o   : out std_logic;
-         raw_o        : out std_logic_vector(g_RAW_COUNT-1 downto 0);
-         fp_o         : out std_logic_vector(g_FP_COUNT-1 downto 0);
+         detect_o    : out std_logic;
+         polarity_o  : out std_logic;
+         raw_o       : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+         fp_o        : out std_logic_vector(g_FP_COUNT-1 downto 0);
          
          -- LUT access.
-         lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
-         lut_we_i     : in std_logic;
-         lut_d_i      : in std_logic_vector(g_FP_COUNT-1 downto 0);
-         lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0)
+         lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+         lut_we_i    : in std_logic;
+         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+         
+         -- Calibration ring oscillator.
+         ro_en_i     : in std_logic;
+         ro_clk_o    : out std_logic
     );
 end entity;
 
@@ -62,7 +68,7 @@ signal taps                  : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
 signal polarity, polarity_d1 : std_logic;
 signal raw                   : std_logic_vector(g_RAW_COUNT-1 downto 0);
 begin
-    with signal_i select
+    with calib_sel_i select
         muxed_signal <= calib_i when '1', signal_i when others;
     
     cmp_delayline: tdc_delayline
@@ -115,6 +121,15 @@ begin
             ab_i   => lut_a_i,
             db_i   => lut_d_i,
             qb_o   => lut_d_o
+        );
+    
+    cmp_ringosc: tdc_ringosc
+        generic map(
+            g_LENGTH => g_RO_LENGTH
+        )
+        port map(
+            en_i  => ro_en_i,
+            clk_o => ro_clk_o
         );
     
     polarity_o <= polarity_d1;
