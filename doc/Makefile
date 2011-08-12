@@ -1,5 +1,6 @@
 TEX=tdc.tex
 
+PDF=$(TEX:.tex=.pdf)
 AUX=$(TEX:.tex=.aux)
 LOG=$(TEX:.tex=.log)
 
