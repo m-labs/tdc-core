@@ -12,12 +12,11 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-08-12 SB Test pipelining and polarity inversion
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
-
--- TODO: test pipelining and polarity inversion
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -67,7 +66,6 @@ end function;
 signal clk      : std_logic;
 signal reset    : std_logic;
 signal d        : std_logic_vector(2**g_N-2 downto 0);
-signal d_bak    : std_logic_vector(2**g_N-2 downto 0);
 signal count    : std_logic_vector(g_N-1 downto 0);
 signal polarity : std_logic;
 
@@ -78,54 +76,68 @@ begin
             g_NIN => 2**g_N-1
         )
         port map(
-            clk_i        => clk,
-            reset_i      => reset,
-            d_i          => d,
-            count_o      => count,
-            polarity_o   => polarity
+            clk_i      => clk,
+            reset_i    => reset,
+            d_i        => d,
+            count_o    => count,
+            polarity_o => polarity
         );
-    reset <= '0';
     process
+    variable v_polarity : std_logic;
+    variable v_d        : std_logic_vector(2**g_N-2 downto 0);
     variable v_seed1    : positive := 1;
     variable v_seed2    : positive := 2;
     variable v_rand     : real;
     variable v_int_rand : integer;
-    variable v_stim     : std_logic_vector(0 downto 0); 
+    variable v_stim     : std_logic_vector(0 downto 0);
     begin
         -- reset
         reset <= '1';
         clk <= '0';
-        wait for 4 ns;
+        wait for 5 ns;
         clk <= '1';
-        wait for 4 ns;
+        wait for 5 ns;
         reset <= '0';
         
-        for i in 0 to 2**g_N-1 loop
+        for i in 1 to 2**g_N+2-1 loop
             -- generate test vector
-            for j in 0 to 2**g_N-2 loop
-                if j > 2**g_N-2-i then
-                    d(j) <= '1';
-                elsif j = 2**g_N-2-i then
-                    d(j) <= '0';
+            if i < 2**g_N then
+                if i rem 2 = 0 then
+                    v_polarity := '0';
                 else
-                    uniform(v_seed1, v_seed2, v_rand);
-                    v_int_rand := integer(trunc(v_rand*2.0));
-                    v_stim := std_logic_vector(to_unsigned(v_int_rand, v_stim'length));
-                    d(j) <= v_stim(0);
+                    v_polarity := '1';
                 end if;
-            end loop;
-            wait for 0 ns;
-            d_bak <= d;
-            -- generate, print and verify output
-            for j in 0 to 1 loop
-                clk <= '0';
-                wait for 4 ns;
-                clk <= '1';
-                wait for 4 ns;
-                d <= (others => '0');
-            end loop;
-            report "Vector:" & str(d_bak) & " Expected:" & integer'image(i) & " Result:" & integer'image(to_integer(unsigned(count))) & "(" & chr(polarity) & ")";
-            assert i = to_integer(unsigned(count)) severity failure;
+                for j in 0 to 2**g_N-2 loop
+                    if j > 2**g_N-2-i then
+                        v_d(j) := v_polarity;
+                    elsif j = 2**g_N-2-i then
+                        v_d(j) := not v_polarity;
+                    else
+                        uniform(v_seed1, v_seed2, v_rand);
+                        v_int_rand := integer(trunc(v_rand*2.0));
+                        v_stim := std_logic_vector(to_unsigned(v_int_rand, v_stim'length));
+                        v_d(j) := v_stim(0);
+                    end if;
+                end loop;
+                report "Vector out: " & str(v_d) & " (polarity: " & chr(v_polarity) & ")";
+                d <= v_d;
+            end if;
+            -- verify output
+            if i > 2 then
+                if i rem 2 = 0 then
+                    v_polarity := '0';
+                else
+                    v_polarity := '1';
+                end if;
+                report "Result in: expected:" & integer'image(i-2) & "(" & chr(v_polarity) & ") output:" & integer'image(to_integer(unsigned(count))) & "(" & chr(polarity) & ")";
+                assert v_polarity = polarity severity failure;
+                assert i-2 = to_integer(unsigned(count)) severity failure;
+            end if;
+            -- pulse clock
+            clk <= '0';
+            wait for 5 ns;
+            clk <= '1';
+            wait for 5 ns;
         end loop;
         report "Test passed.";
         wait;
