@@ -8,6 +8,7 @@ all: $(PDF)
 
 %.pdf: %.tex
 	pdflatex $<
+	pdflatex $<
 
 clean:
 	rm -f $(PDF) $(AUX) $(LOG)
