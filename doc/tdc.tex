@@ -26,24 +26,31 @@ Using the Xilinx timing model, a surprising observation is that some delay diffe
 
 To avoid negative differences, we simply reorder the bits at the output of the delay line to sort the taps by increasing actual delays.
 
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{delaystruct.pdf}
+\end{figure}
+
 \section{Calibration mechanism}
 In the formulas below:
 \begin{itemize}
 \item $T_{sys}$ is the system clock period.
-\item $H(n)$ is the number of hits in the histogram for bin $n$.
+\item $H(n)$ is the number of hits in the histogram at output $n$. A hit at output $n$ means that the signal propagated down to output $n$, without reaching output $n-1$.
 \item $W(n)$ is the width of bin $n$.
-\item $C = \displaystyle\sum\limits_{n} H(n)$ is the total number of hits in the histogram.
-\item $R(n)$ is the time stamp of an event whose signal propagated up to bin $n$. The LUT contains the function $R$.
+\item $C = \displaystyle\sum\limits_{n=0}^{N-1} H(n)$ is the total number of hits in the histogram.
+\item $R(n)$ is the time stamp of an event whose signal propagated down to output $n$ (without reaching output $n-1$), measured backwards from the clock tick.
 \item $f$ (respectively $f_{0}$) is the current (respectively reference) frequency of the online calibration ring oscillator.
 \end{itemize}
 
 \subsection{Offline calibration}
 \begin{equation}
-W_{0}(n) = \frac{H(n)}{C} \cdot T_{sys}
+W_{0}(N-1) = 0
+\end{equation}
+\begin{equation}
+W_{0}(n) = \frac{H(n+1)}{C} \cdot T_{sys}
 \end{equation}
 
 \begin{equation}
-R_{0}(n) = \displaystyle\sum\limits_{i=0}^{n}{W_{0}(i)} = \frac{T_{sys}}{C} \cdot \displaystyle\sum\limits_{i=0}^{n}{H(i)}
+R_{0}(n) = \displaystyle\sum\limits_{i=n}^{N-1}{W_{0}(i)} = \frac{T_{sys}}{C} \cdot \displaystyle\sum\limits_{i=n}^{N-1}{H(i)}
 \end{equation}
 
 \subsection{Online calibration}
