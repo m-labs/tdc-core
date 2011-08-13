@@ -19,7 +19,8 @@
 \maketitle{}
 \section{Specifications}
 
-\section{Delay line structure}
+\section{Architecture details}
+\subsection{Delay line structure}
 The delay line uses a carry chain. It is made up of \verb!CARRY4! primitives whose \verb!CO! outputs are registered by the dedicated D flip flops of the same slices. The signal is injected at the \verb!CYINIT! pin at the bottom of the carry chain. The \verb!CARRY4! primitives have their \verb!S! inputs hardwired to 1, which means the carry chain becomes a delay line with the signal going unchanged through the \verb!MUXCY! elements (see \cite{s6hdl} for reference). Since each \verb!CARRY4! contains four \verb!MUXCY! elements, the delay line has four times as many taps as there are \verb!CARRY4! primitives.
 
 Using the Xilinx timing model, a surprising observation is that some delay differences between consecutive taps are negative. This probably is at the origin of the ``bubbles'' mentioned in the EPFL paper \cite{epfl}. The schematics given by Xilinx of the \verb!CARRY4! primitive is misleading there, and has probably little to do with the actual transistor-level implementation. The Xilinx documentation \cite{s6hdl} gives a hint by describing the primitive as ``Fast Carry Logic \textit{with Look Ahead}''.
@@ -30,7 +31,7 @@ To avoid negative differences, we simply reorder the bits at the output of the d
 \includegraphics[width=\textwidth]{delaystruct.pdf}
 \end{figure}
 
-\section{Calibration mechanism}
+\subsection{Calibration mechanism}
 In the formulas below:
 \begin{itemize}
 \item $T_{sys}$ is the system clock period.
@@ -41,7 +42,7 @@ In the formulas below:
 \item $f$ (respectively $f_{0}$) is the current (respectively reference) frequency of the online calibration ring oscillator.
 \end{itemize}
 
-\subsection{Offline calibration}
+\subsubsection{Offline calibration}
 \begin{equation}
 W_{0}(N-1) = 0
 \end{equation}
@@ -53,11 +54,13 @@ W_{0}(n) = \frac{H(n+1)}{C} \cdot T_{sys}
 R_{0}(n) = \displaystyle\sum\limits_{i=n}^{N-1}{W_{0}(i)} = \frac{T_{sys}}{C} \cdot \displaystyle\sum\limits_{i=n}^{N-1}{H(i)}
 \end{equation}
 
-\subsection{Online calibration}
+\subsubsection{Online calibration}
 
 \begin{equation}
 R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 \end{equation}
+
+\subsection{Deskew stage}
 
 \begin{thebibliography}{99}
 \bibitem{s6hdl} Xilinx, \textsl{Spartan-6 Libraries Guide for HDL Designs}, \url{http://www.xilinx.com/support/documentation/sw_manuals/xilinx12_3/spartan6_hdl.pdf}

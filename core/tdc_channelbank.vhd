@@ -34,40 +34,48 @@ entity tdc_channelbank is
         g_RAW_COUNT     : positive;
         -- Number of fractional part bits.
         g_FP_COUNT      : positive;
+        -- Number of coarse counter bits.
+        g_COARSE_COUNT  : positive;
         -- Length of each ring oscillator.
         g_RO_LENGTH     : positive
     );
     port(
-         clk_i       : in std_logic;
-         reset_i     : in std_logic;
+        clk_i       : in std_logic;
+        reset_i     : in std_logic;
          
-         -- Control.
-         next_i      : in std_logic;
-         last_o      : out std_logic;
-         calib_sel_i : in std_logic;
-         
-         -- Per-channel signal inputs.
-         signal_i    : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-         calib_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-         
+        -- Control.
+        cc_rst_i    : in std_logic;
+        cc_cy_o     : out std_logic;
+        next_i      : in std_logic;
+        last_o      : out std_logic;
+        calib_sel_i : in std_logic;
+        
+        -- Per-channel deskew input.
+        deskew_i    : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+        
+        -- Per-channel signal inputs.
+        signal_i    : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        calib_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        
          -- Per-channel detection outputs.
-         detect_o    : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-         polarity_o  : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-         raw_o       : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
-         fp_o        : out std_logic_vector(g_CHANNEL_COUNT*g_FP_COUNT-1 downto 0);
+        detect_o    : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        polarity_o  : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        raw_o       : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
+        fp_o        : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
          
-         -- LUT access.
-         lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
-         lut_we_i    : in std_logic;
-         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        -- LUT access.
+        lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_we_i    : in std_logic;
+        lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
          
-         -- Online calibration ring oscillator.
-         ro_clk_o    : out std_logic
+        -- Online calibration ring oscillator.
+        ro_clk_o    : out std_logic
     );
 end entity;
 
 architecture rtl of tdc_channelbank is
+signal coarse_counter         : std_logic_vector(g_COARSE_COUNT-1 downto 0);
 signal current_channel_onehot : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
 signal lut_d_o_s              : std_logic_vector(g_CHANNEL_COUNT*g_FP_COUNT-1 downto 0);
 signal ro_clk_o_s             : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
@@ -83,12 +91,17 @@ begin
                 g_CARRY4_COUNT => g_CARRY4_COUNT,
                 g_RAW_COUNT    => g_RAW_COUNT,
                 g_FP_COUNT     => g_FP_COUNT,
+                g_COARSE_COUNT => g_COARSE_COUNT,
                 g_RO_LENGTH    => g_RO_LENGTH
             )
             port map(
                 clk_i       => clk_i,
                 reset_i     => reset_i,
-
+            
+                coarse_i    => coarse_counter,
+                deskew_i    =>
+                    deskew_i((i+1)*(g_COARSE_COUNT+g_FP_COUNT)-1 downto i*(g_COARSE_COUNT+g_FP_COUNT)),
+    
                 signal_i    => signal_i(i),
                 calib_i     => calib_i(i),
                 calib_sel_i => this_calib_sel,
@@ -96,7 +109,8 @@ begin
                 detect_o    => detect_o(i),
                 polarity_o  => polarity_o(i),
                 raw_o       => raw_o((i+1)*g_RAW_COUNT-1 downto i*g_RAW_COUNT),
-                fp_o        => fp_o((i+1)*g_FP_COUNT-1 downto i*g_FP_COUNT),
+                fp_o        =>
+                    fp_o((i+1)*(g_COARSE_COUNT+g_FP_COUNT)-1 downto i*(g_COARSE_COUNT+g_FP_COUNT)),
 
                 lut_a_i     => lut_a_i,
                 lut_we_i    => this_lut_we,
@@ -107,6 +121,24 @@ begin
                 ro_clk_o    => ro_clk_o_s(i)
             );
     end generate;
+    
+    -- Coarse counter.
+    process(clk_i)
+    begin
+        if rising_edge(clk_i) then
+            if (reset_i = '1') or (cc_rst_i = '1') then
+                coarse_counter <= (coarse_counter'range => '0');
+                cc_cy_o <= '0';
+            else
+                coarse_counter <= std_logic_vector(unsigned(coarse_counter) + 1);
+                if coarse_counter = (coarse_counter'range => '1') then
+                    cc_cy_o <= '1';
+                else
+                    cc_cy_o <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
     
     -- Combine LUT outputs.
     process(lut_d_o_s, current_channel_onehot)

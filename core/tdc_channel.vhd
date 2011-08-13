@@ -19,6 +19,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library work;
 use work.tdc_package.all;
@@ -32,12 +33,18 @@ entity tdc_channel is
         g_RAW_COUNT    : positive;
         -- Number of fractional part bits.
         g_FP_COUNT     : positive;
+        -- Number of coarse counter bits.
+        g_COARSE_COUNT : positive;
         -- Length of the ring oscillator.
         g_RO_LENGTH    : positive
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
+         
+         -- Coarse counter and deskew inputs.
+         coarse_i    : in std_logic_vector(g_COARSE_COUNT-1 downto 0);
+         deskew_i    : in std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
          
          -- Signal input.
          signal_i    : in std_logic;
@@ -48,7 +55,7 @@ entity tdc_channel is
          detect_o    : out std_logic;
          polarity_o  : out std_logic;
          raw_o       : out std_logic_vector(g_RAW_COUNT-1 downto 0);
-         fp_o        : out std_logic_vector(g_FP_COUNT-1 downto 0);
+         fp_o        : out std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
          
          -- LUT access.
          lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
@@ -63,10 +70,15 @@ entity tdc_channel is
 end entity;
 
 architecture rtl of tdc_channel is
-signal muxed_signal          : std_logic;
-signal taps                  : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
-signal polarity, polarity_d1 : std_logic;
-signal raw                   : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal muxed_signal : std_logic;
+signal taps         : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
+signal polarity     : std_logic;
+signal polarity_d1  : std_logic;
+signal polarity_d2  : std_logic;
+signal raw          : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal raw_d1       : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal raw_d2       : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal lut          : std_logic_vector(g_FP_COUNT-1 downto 0);
 begin
     with calib_sel_i select
         muxed_signal <= calib_i when '1', signal_i when others;
@@ -114,7 +126,7 @@ begin
             bwea_i => (others => '0'),
             aa_i   => raw,
             da_i   => (others => '0'),
-            qa_o   => fp_o,
+            qa_o   => lut,
             
             web_i  => lut_we_i,
             bweb_i => (others => '0'),
@@ -131,20 +143,39 @@ begin
             en_i  => ro_en_i,
             clk_o => ro_clk_o
         );
-    
-    polarity_o <= polarity_d1;
-    
+
     process(clk_i)
     begin
         if rising_edge(clk_i) then
             if reset_i = '1' then
                 detect_o <= '0';
                 polarity_d1 <= '1';
-                raw_o <= (others => '0');
+                polarity_d2 <= '1';
+                raw_d1 <= (others => '0');
+                raw_d2 <= (others => '0');
             else
-                detect_o <= polarity xor polarity_d1;
+                detect_o <= polarity_d1 xor polarity_d2;
                 polarity_d1 <= polarity;
-                raw_o <= raw;
+                polarity_d2 <= polarity_d1;
+                raw_d1 <= raw;
+                raw_d2 <= raw_d1;
+            end if;
+        end if;
+    end process;
+    polarity_o <= polarity_d2;
+    raw_o <= raw_d2;
+    
+    -- Combine coarse counter value and deskew.
+    process(clk_i)
+    begin
+        if rising_edge(clk_i) then
+            if reset_i = '1' then
+                fp_o <= (others => '0');
+            else
+                fp_o <= std_logic_vector(
+                    unsigned(coarse_i & (lut'range => '0'))
+                    - unsigned(lut)
+                    + unsigned(deskew_i));
             end if;
         end if;
     end process;
