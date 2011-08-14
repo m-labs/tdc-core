@@ -50,7 +50,7 @@ entity tdc_channelbank is
         last_o      : out std_logic;
         calib_sel_i : in std_logic;
         
-        -- Per-channel deskew input.
+        -- Per-channel deskew inputs.
         deskew_i    : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
         
         -- Per-channel signal inputs.
