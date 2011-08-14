@@ -130,4 +130,14 @@ component tdc_delayline is
     );
 end component;
 
+component tdc_psync is
+    port(
+        clk_src_i : in std_logic;
+        p_i       : in std_logic;
+        
+        clk_dst_i : in std_logic;
+        p_o       : out std_logic
+    );
+end component;
+
 end package;

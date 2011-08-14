@@ -20,6 +20,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library work;
+use work.tdc_package.all;
+
 entity tdc_psync is
     port(
         clk_src_i : in std_logic;
@@ -63,6 +66,6 @@ begin
         end if;
     end process;
     
-    -- Convert level flips back into pulses synchronous to clk_dest domain.
+    -- Convert level flips back into pulses synchronous to clk_dst domain.
     p_o <= level_d2 xor level_d3;
 end architecture;
