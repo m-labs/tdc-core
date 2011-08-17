@@ -2,7 +2,7 @@
 -- TDC Core / CERN
 -------------------------------------------------------------------------------
 --
--- unit name: tb_lbc
+-- unit name: tb_freqc
 --
 -- author: Sebastien Bourdeauducq, sebastien@milkymist.org
 --
