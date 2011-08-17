@@ -22,30 +22,16 @@ use ieee.std_logic_1164.all;
 
 package tdc_package is
 
-component tdc_freqc is
-    generic(
-        g_COUNTER_WIDTH : positive;
-        g_TIMER_WIDTH   : positive
-    );
-    port(
-        clk_i   : in std_logic;
-        reset_i : in std_logic;
-        
-        clk_m_i : in std_logic;
-        start_i : in std_logic;
-        ready_o : out std_logic;
-        freq_o  : out std_logic_vector(g_COUNTER_WIDTH-1 downto 0)
-    );
-end component;
-
 component tdc_channelbank is
     generic(
-        g_CHANNEL_COUNT : positive;
-        g_CARRY4_COUNT  : positive;
-        g_RAW_COUNT     : positive;
-        g_FP_COUNT      : positive;
-        g_COARSE_COUNT  : positive;
-        g_RO_LENGTH     : positive
+        g_CHANNEL_COUNT  : positive;
+        g_CARRY4_COUNT   : positive;
+        g_RAW_COUNT      : positive;
+        g_FP_COUNT       : positive;
+        g_COARSE_COUNT   : positive;
+        g_RO_LENGTH      : positive;
+        g_FCOUNTER_WIDTH : positive;
+        g_FTIMER_WIDTH   : positive
     );
     port(
         clk_i       : in std_logic;
@@ -71,8 +57,28 @@ component tdc_channelbank is
         lut_we_i    : in std_logic;
         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
-         
-        ro_clk_o    : out std_logic
+        
+        oc_start_i  : in std_logic;
+        oc_ready_o  : out std_logic;
+        oc_freq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_store_i  : in std_logic;
+        oc_sfreq_o  : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
+    );
+end component;
+
+component tdc_freqc is
+    generic(
+        g_COUNTER_WIDTH : positive;
+        g_TIMER_WIDTH   : positive
+    );
+    port(
+        clk_i   : in std_logic;
+        reset_i : in std_logic;
+        
+        clk_m_i : in std_logic;
+        start_i : in std_logic;
+        ready_o : out std_logic;
+        freq_o  : out std_logic_vector(g_COUNTER_WIDTH-1 downto 0)
     );
 end component;
 

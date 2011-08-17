@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-08-17 SB Added frequency counter.
 -- 2011-08-08 SB Created file
 -------------------------------------------------------------------------------
 
@@ -27,17 +28,21 @@ use work.tdc_package.all;
 entity tdc_channelbank is
     generic(
         -- Number of channels.
-        g_CHANNEL_COUNT : positive;
+        g_CHANNEL_COUNT  : positive;
         -- Number of CARRY4 elements per channel.
-        g_CARRY4_COUNT  : positive;
+        g_CARRY4_COUNT   : positive;
         -- Number of raw output bits.
-        g_RAW_COUNT     : positive;
+        g_RAW_COUNT      : positive;
         -- Number of fractional part bits.
-        g_FP_COUNT      : positive;
+        g_FP_COUNT       : positive;
         -- Number of coarse counter bits.
-        g_COARSE_COUNT  : positive;
+        g_COARSE_COUNT   : positive;
         -- Length of each ring oscillator.
-        g_RO_LENGTH     : positive
+        g_RO_LENGTH      : positive;
+        -- Frequency counter width.
+        g_FCOUNTER_WIDTH : positive;
+        -- Frequency counter timer width.
+        g_FTIMER_WIDTH   : positive
     );
     port(
         clk_i       : in std_logic;
@@ -69,8 +74,12 @@ entity tdc_channelbank is
         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
          
-        -- Online calibration ring oscillator.
-        ro_clk_o    : out std_logic
+        -- Online calibration.
+        oc_start_i  : in std_logic;
+        oc_ready_o  : out std_logic;
+        oc_freq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_store_i  : in std_logic;
+        oc_sfreq_o  : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
     );
 end entity;
 
@@ -78,8 +87,12 @@ architecture rtl of tdc_channelbank is
 signal coarse_counter         : std_logic_vector(g_COARSE_COUNT-1 downto 0);
 signal current_channel_onehot : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
 signal lut_d_o_s              : std_logic_vector(g_CHANNEL_COUNT*g_FP_COUNT-1 downto 0);
-signal ro_clk_o_s             : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+signal ro_clk_s               : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+signal ro_clk                 : std_logic;
+signal freq                   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+signal sfreq_s                : std_logic_vector(g_CHANNEL_COUNT*g_FCOUNTER_WIDTH-1 downto 0);
 begin
+    -- Per-channel processing.
     g_channels: for i in 0 to g_CHANNEL_COUNT-1 generate
     signal this_calib_sel : std_logic;
     signal this_lut_we    : std_logic;
@@ -118,9 +131,26 @@ begin
                 lut_d_o     => lut_d_o_s((i+1)*g_FP_COUNT-1 downto i*g_FP_COUNT),
 
                 ro_en_i     => current_channel_onehot(i),
-                ro_clk_o    => ro_clk_o_s(i)
+                ro_clk_o    => ro_clk_s(i)
             );
     end generate;
+    
+    -- Frequency counter.
+    cmp_freqc: tdc_freqc
+        generic map(
+            g_COUNTER_WIDTH => g_FCOUNTER_WIDTH,
+            g_TIMER_WIDTH   => g_FTIMER_WIDTH
+        )
+        port map(
+            clk_i   => clk_i,
+            reset_i => reset_i,
+            
+            clk_m_i => ro_clk,
+            start_i => oc_start_i,
+            ready_o => oc_ready_o,
+            freq_o  => freq
+        );
+    oc_freq_o <= freq;
     
     -- Coarse counter.
     process(clk_i)
@@ -144,7 +174,7 @@ begin
     process(lut_d_o_s, current_channel_onehot)
     variable v_lut_d_o: std_logic_vector(g_FP_COUNT-1 downto 0);
     begin
-        v_lut_d_o := (g_FP_COUNT-1 downto 0 => '0');
+        v_lut_d_o := (v_lut_d_o'range => '0');
         for i in 0 to g_CHANNEL_COUNT-1 loop
             if current_channel_onehot(i) = '1' then
                 v_lut_d_o := v_lut_d_o or lut_d_o_s((i+1)*g_FP_COUNT-1 downto i*g_FP_COUNT);
@@ -155,7 +185,34 @@ begin
     
     -- Combine ring oscillator outputs. When disabled, a ring oscillator
     -- outputs 0, so we can simply OR all outputs together.
-    ro_clk_o <= '0' when (ro_clk_o_s = (ro_clk_o_s'range => '0')) else '1';
+    ro_clk <= '0' when (ro_clk_s = (ro_clk_s'range => '0')) else '1';
+    
+    -- Store and retrieve per-channel ring oscillator frequencies.
+    process(clk_i)
+    begin
+        if rising_edge(clk_i) then
+            if oc_store_i = '1' then
+                for i in 0 to g_CHANNEL_COUNT-1 loop
+                    if current_channel_onehot(i) = '1' then
+                        sfreq_s((i+1)*g_FCOUNTER_WIDTH-1 downto i*g_FCOUNTER_WIDTH) <= freq;
+                    end if;
+                end loop;
+            end if;
+        end if;
+    end process;
+    
+    process(sfreq_s, current_channel_onehot)
+    variable v_oc_sfreq_o: std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+    begin
+        v_oc_sfreq_o := (v_oc_sfreq_o'range => '0');
+        for i in 0 to g_CHANNEL_COUNT-1 loop
+            if current_channel_onehot(i) = '1' then
+                v_oc_sfreq_o := v_oc_sfreq_o 
+                    or sfreq_s((i+1)*g_FCOUNTER_WIDTH-1 downto i*g_FCOUNTER_WIDTH);
+            end if;
+        end loop;
+        oc_sfreq_o <= v_oc_sfreq_o;
+    end process;
     
     -- Generate channel selection signal.
     process(clk_i)

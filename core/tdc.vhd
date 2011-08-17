@@ -23,7 +23,7 @@ use ieee.std_logic_1164.all;
 library work;
 use work.tdc_package.all;
 
-entity tdc_channelbank is
+entity tdc is
     generic(
         -- Number of channels.
         g_CHANNEL_COUNT  : positive;
