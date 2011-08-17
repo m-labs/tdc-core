@@ -22,6 +22,22 @@ use ieee.std_logic_1164.all;
 
 package tdc_package is
 
+component tdc_freqc is
+    generic(
+        g_COUNTER_WIDTH : positive;
+        g_TIMER_WIDTH   : positive
+    );
+    port(
+        clk_i   : in std_logic;
+        reset_i : in std_logic;
+        
+        clk_m_i : in std_logic;
+        start_i : in std_logic;
+        ready_o : out std_logic;
+        freq_o  : out std_logic_vector(g_COUNTER_WIDTH-1 downto 0)
+    );
+end component;
+
 component tdc_channelbank is
     generic(
         g_CHANNEL_COUNT : positive;

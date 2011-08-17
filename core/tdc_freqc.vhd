@@ -30,13 +30,13 @@ entity tdc_freqc is
         g_TIMER_WIDTH   : positive
     );
     port(
-        clk_i    : in std_logic;
-        reset_i  : in std_logic;
+        clk_i   : in std_logic;
+        reset_i : in std_logic;
         
-        clk_m_i  : in std_logic;
-        start_i  : in std_logic;
-        ready_o  : out std_logic;
-        freq_o   : out std_logic_vector(g_COUNTER_WIDTH-1 downto 0)
+        clk_m_i : in std_logic;
+        start_i : in std_logic;
+        ready_o : out std_logic;
+        freq_o  : out std_logic_vector(g_COUNTER_WIDTH-1 downto 0)
     );
 end entity;
 
