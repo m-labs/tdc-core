@@ -59,10 +59,11 @@ signal diff      : std_logic_vector(g_WIDTH downto 0);
 signal ready     : std_logic;
 
 begin
-    quotient_o <= qr(2*g_WIDTH-1 downto g_WIDTH);
-    remainder_o <= qr(g_WIDTH-1 downto 0);
+    quotient_o <= qr(g_WIDTH-1 downto 0);
+    remainder_o <= qr(2*g_WIDTH-1 downto g_WIDTH);
     
     ready <= '1' when (counter = (counter'range => '0')) else '0';
+    ready_o <= ready;
     diff <= std_logic_vector(unsigned(qr(2*g_WIDTH-1 downto g_WIDTH-1))
         - unsigned("0" & divisor_r));
     
@@ -76,13 +77,14 @@ begin
             else
                 if start_i = '1' then
                     counter <= std_logic_vector(to_unsigned(g_WIDTH, counter'length));
-                    qr <= (g_WIDTH-1 downto 0 => '0') & dividend;
-                    divisor_r <= divisor;
+                    qr <= (g_WIDTH-1 downto 0 => '0') & dividend_i;
+                    divisor_r <= divisor_i;
                 elsif ready = '0' then
                     if diff(g_WIDTH) = '1' then
                         qr <= qr(2*g_WIDTH-2 downto 0) & "0";
                     else
                         qr <= diff(g_WIDTH-1 downto 0) & qr(g_WIDTH-2 downto 0) & "1";
+                    end if;
                     counter <= std_logic_vector(unsigned(counter) - 1);
                 end if;
             end if;

@@ -152,6 +152,24 @@ component tdc_delayline is
     );
 end component;
 
+component tdc_divider is
+    generic(
+        g_WIDTH: positive
+    );
+    port(
+        clk_i       : in std_logic;
+        reset_i     : in std_logic;
+        
+        start_i     : in std_logic;
+        dividend_i  : in std_logic_vector(g_WIDTH-1 downto 0);
+        divisor_i   : in std_logic_vector(g_WIDTH-1 downto 0);
+        
+        ready_o     : out std_logic;
+        quotient_o  : out std_logic_vector(g_WIDTH-1 downto 0);
+        remainder_o : out std_logic_vector(g_WIDTH-1 downto 0)
+    );
+end component;
+
 component tdc_psync is
     port(
         clk_src_i : in std_logic;
