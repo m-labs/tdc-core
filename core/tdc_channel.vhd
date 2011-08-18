@@ -39,33 +39,33 @@ entity tdc_channel is
         g_RO_LENGTH    : positive
     );
     port(
-         clk_i        : in std_logic;
-         reset_i      : in std_logic;
-         
-         -- Coarse counter and deskew inputs.
-         coarse_i    : in std_logic_vector(g_COARSE_COUNT-1 downto 0);
-         deskew_i    : in std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
-         
-         -- Signal input.
-         signal_i    : in std_logic;
-         calib_i     : in std_logic;
-         calib_sel_i : in std_logic;
-         
-         -- Detection outputs.
-         detect_o    : out std_logic;
-         polarity_o  : out std_logic;
-         raw_o       : out std_logic_vector(g_RAW_COUNT-1 downto 0);
-         fp_o        : out std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
-         
-         -- LUT access.
-         lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
-         lut_we_i    : in std_logic;
-         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
-         
-         -- Calibration ring oscillator.
-         ro_en_i     : in std_logic;
-         ro_clk_o    : out std_logic
+        clk_i        : in std_logic;
+        reset_i      : in std_logic;
+
+        -- Coarse counter and deskew inputs.
+        coarse_i    : in std_logic_vector(g_COARSE_COUNT-1 downto 0);
+        deskew_i    : in std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+
+        -- Signal input.
+        signal_i    : in std_logic;
+        calib_i     : in std_logic;
+        calib_sel_i : in std_logic;
+
+        -- Detection outputs.
+        detect_o    : out std_logic;
+        polarity_o  : out std_logic;
+        raw_o       : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+        fp_o        : out std_logic_vector((g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+
+        -- LUT access.
+        lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_we_i    : in std_logic;
+        lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+
+        -- Calibration ring oscillator.
+        ro_en_i     : in std_logic;
+        ro_clk_o    : out std_logic
     );
 end entity;
 

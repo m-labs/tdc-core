@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-08-18 SB Added histogram
 -- 2011-08-17 SB Added frequency counter
 -- 2011-08-08 SB Created file
 -------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ use ieee.numeric_std.all;
 
 library work;
 use work.tdc_package.all;
+use work.genram_pkg.all;
 
 entity tdc_channelbank is
     generic(
@@ -73,7 +75,15 @@ entity tdc_channelbank is
         lut_we_i    : in std_logic;
         lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
         lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
-         
+        
+        -- Histogram.
+        c_detect_o  : out std_logic;
+        c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_we_i    : in std_logic;
+        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        
         -- Online calibration.
         oc_start_i  : in std_logic;
         oc_ready_o  : out std_logic;
@@ -84,9 +94,13 @@ entity tdc_channelbank is
 end entity;
 
 architecture rtl of tdc_channelbank is
+signal detect_o               : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+signal raw_o                  : std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
 signal coarse_counter         : std_logic_vector(g_COARSE_COUNT-1 downto 0);
 signal current_channel_onehot : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+signal current_channel        : std_logic_vector(f_log2_size(g_CHANNEL_COUNT)-1 downto 0);
 signal lut_d_o_s              : std_logic_vector(g_CHANNEL_COUNT*g_FP_COUNT-1 downto 0);
+signal his_full_a             : std_logic_vector(f_log2_size(g_CHANNEL_COUNT)+g_RAW_COUNT-1 downto 0);
 signal ro_clk_s               : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
 signal ro_clk                 : std_logic;
 signal freq                   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
@@ -119,9 +133,9 @@ begin
                 calib_i     => calib_i(i),
                 calib_sel_i => this_calib_sel,
 
-                detect_o    => detect_o(i),
+                detect_o    => detect(i),
                 polarity_o  => polarity_o(i),
-                raw_o       => raw_o((i+1)*g_RAW_COUNT-1 downto i*g_RAW_COUNT),
+                raw_o       => raw((i+1)*g_RAW_COUNT-1 downto i*g_RAW_COUNT),
                 fp_o        =>
                     fp_o((i+1)*(g_COARSE_COUNT+g_FP_COUNT)-1 downto i*(g_COARSE_COUNT+g_FP_COUNT)),
 
@@ -134,6 +148,28 @@ begin
                 ro_clk_o    => ro_clk_s(i)
             );
     end generate;
+    detect_o <= detect;
+    raw_o <= raw;
+    
+    -- Histogram memory.
+    cmp_histogram: generic_spram
+        generic map(
+            g_data_width               => g_FP_COUNT,
+            g_size                     => g_CHANNEL_COUNT*2**g_RAW_COUNT,
+            g_with_byte_enable         => false,
+            g_init_file                => "",
+            g_addr_conflict_resolution => "read_first"
+        )
+        port map(
+            rst_n_i => '1',
+            clk_i   => clk_i,
+            bwe_i   => (others => '0'),
+            we_i    => his_we_i,
+            a_i     => his_full_a,
+            d_i     => his_d_i,
+            q_o     => his_d_o
+        );
+    his_full_a <= current_channel & his_a_i;
     
     -- Frequency counter.
     cmp_freqc: tdc_freqc
@@ -183,6 +219,23 @@ begin
         lut_d_o <= v_lut_d_o;
     end process;
     
+    -- Select detect and raw outputs for histogram generation.
+    process(detect, raw, current_channel_onehot)
+    variable v_c_detect_o : std_logic;
+    variable v_c_raw_o    : std_logic_vector(g_RAW_COUNT-1 downto 0);
+    begin
+        v_c_detect_o := '0';
+        v_c_raw_o := (v_c_raw_o'range => '0');
+        for i in 0 to g_CHANNEL_COUNT-1 loop
+            if current_channel_onehot(i) = '1' then
+                v_c_detect_o := v_c_detect_o or detect(i);
+                v_c_raw_o := v_c_raw_o or raw((i+1)*g_RAW_COUNT-1 downto i*g_RAW_COUNT);
+            end if;
+        end loop;
+        c_detect_o <= v_c_detect_o;
+        c_raw_o <= v_c_raw_o;
+    end process;
+    
     -- Combine ring oscillator outputs. When disabled, a ring oscillator
     -- outputs 0, so we can simply OR all outputs together.
     ro_clk <= '0' when (ro_clk_s = (ro_clk_s'range => '0')) else '1';
@@ -214,7 +267,7 @@ begin
         oc_sfreq_o <= v_oc_sfreq_o;
     end process;
     
-    -- Generate channel selection signal.
+    -- Generate channel selection signals.
     process(clk_i)
     begin
         if rising_edge(clk_i) then
@@ -229,5 +282,20 @@ begin
         end if;
     end process;
     last_o <= current_channel_onehot(g_CHANNEL_COUNT-1);
+    
+    g_encode: if g_CHANNEL_COUNT > 1 generate
+        process(current_channel_onehot)
+        variable v_current_channel: std_logic_vector(f_log2_size(g_CHANNEL_COUNT)-1 downto 0);
+        begin
+            v_current_channel := (v_current_channel'range => '0');
+            for i in 0 to g_CHANNEL_COUNT-1 loop
+                if current_channel_onehot(i) = '1' then
+                    v_current_channel := v_current_channel
+                        or std_logic_vector(to_unsigned(i, v_current_channel'length));
+                end if;
+            end loop;
+            current_channel <= v_current_channel;
+        end process;
+    end generate;
 
 end architecture;
