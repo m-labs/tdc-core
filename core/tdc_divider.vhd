@@ -21,6 +21,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.tdc_package.all;
+
 entity tdc_divider is
     generic(
         -- Number of bits of the operands and results.
