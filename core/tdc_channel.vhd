@@ -75,6 +75,7 @@ signal taps         : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
 signal polarity     : std_logic;
 signal polarity_d1  : std_logic;
 signal polarity_d2  : std_logic;
+signal detect_d1    : std_logic;
 signal raw          : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal raw_d1       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal raw_d2       : std_logic_vector(g_RAW_COUNT-1 downto 0);
@@ -144,6 +145,8 @@ begin
             clk_o => ro_clk_o
         );
 
+    detect_d1 <= polarity_d1 xor polarity_d2;
+    
     process(clk_i)
     begin
         if rising_edge(clk_i) then
@@ -154,11 +157,13 @@ begin
                 raw_d1 <= (others => '0');
                 raw_d2 <= (others => '0');
             else
-                detect_o <= polarity_d1 xor polarity_d2;
+                detect_o <= detect_d1;
                 polarity_d1 <= polarity;
-                polarity_d2 <= polarity_d1;
                 raw_d1 <= raw;
-                raw_d2 <= raw_d1;
+                if detect_d1 = '1' then
+                    polarity_d2 <= polarity_d1;
+                    raw_d2 <= raw_d1;
+                end if;
             end if;
         end if;
     end process;
@@ -172,10 +177,12 @@ begin
             if reset_i = '1' then
                 fp_o <= (others => '0');
             else
-                fp_o <= std_logic_vector(
-                    unsigned(coarse_i & (lut'range => '0'))
-                    - unsigned(lut)
-                    + unsigned(deskew_i));
+                if detect_d1 = '1' then
+                    fp_o <= std_logic_vector(
+                        unsigned(coarse_i & (lut'range => '0'))
+                        - unsigned(lut)
+                        + unsigned(deskew_i));
+                end if;
             end if;
         end if;
     end process;
