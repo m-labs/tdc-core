@@ -70,6 +70,7 @@ entity tdc_channel is
 end entity;
 
 architecture rtl of tdc_channel is
+signal calib_sel_d  : std_logic;
 signal muxed_signal : std_logic;
 signal taps         : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
 signal polarity     : std_logic;
@@ -81,7 +82,14 @@ signal raw_d1       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal raw_d2       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal lut          : std_logic_vector(g_FP_COUNT-1 downto 0);
 begin
-    with calib_sel_i select
+    -- register calibration select signal to avoid glitches
+    process(clk_i)
+    begin
+        if rising_edge(clk_i) then
+            calib_sel_d <= calib_sel_i;
+        end if;
+    end process;
+    with calib_sel_d select
         muxed_signal <= calib_i when '1', signal_i when others;
     
     cmp_delayline: tdc_delayline
