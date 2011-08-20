@@ -26,21 +26,21 @@ use work.tdc_package.all;
 entity tdc is
     generic(
         -- Number of channels.
-        g_CHANNEL_COUNT  : positive;
+        g_CHANNEL_COUNT  : positive := 2;
         -- Number of CARRY4 elements per channel.
-        g_CARRY4_COUNT   : positive;
+        g_CARRY4_COUNT   : positive := 100;
         -- Number of raw output bits.
-        g_RAW_COUNT      : positive;
+        g_RAW_COUNT      : positive := 9;
         -- Number of fractional part bits.
-        g_FP_COUNT       : positive;
+        g_FP_COUNT       : positive := 13;
         -- Number of coarse counter bits.
-        g_COARSE_COUNT   : positive;
+        g_COARSE_COUNT   : positive := 25;
         -- Length of each ring oscillator.
-        g_RO_LENGTH      : positive;
+        g_RO_LENGTH      : positive := 20;
         -- Frequency counter width.
-        g_FCOUNTER_WIDTH : positive;
+        g_FCOUNTER_WIDTH : positive := 13;
         -- Frequency counter timer width.
-        g_FTIMER_WIDTH   : positive
+        g_FTIMER_WIDTH   : positive := 10
     );
     port(
         clk_i       : in std_logic;
@@ -62,7 +62,7 @@ entity tdc is
         detect_o    : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
         polarity_o  : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
         raw_o       : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
-        fp_o        : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+        fp_o        : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0)
         
         -- Debug interface.
         -- TODO
@@ -102,7 +102,7 @@ begin
             g_RO_LENGTH      => g_RO_LENGTH,
             g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH,
             g_FTIMER_WIDTH   => g_FTIMER_WIDTH
-        );
+        )
         port map(
             clk_i       => clk_i,
             reset_i     => reset_i,
@@ -147,7 +147,7 @@ begin
             g_RAW_COUNT      => g_RAW_COUNT,
             g_FP_COUNT       => g_FP_COUNT,
             g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH
-        );
+        )
         port map(
             clk_i       => clk_i,
             reset_i     => reset_i,
