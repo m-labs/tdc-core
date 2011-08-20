@@ -62,6 +62,11 @@ R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 
 \subsection{Deskew stage}
 
+\section{Implementing the core}
+\begin{verbatim}
+NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
+\end{verbatim}
+
 \begin{thebibliography}{99}
 \bibitem{s6hdl} Xilinx, \textsl{Spartan-6 Libraries Guide for HDL Designs}, \url{http://www.xilinx.com/support/documentation/sw_manuals/xilinx12_3/spartan6_hdl.pdf}
 \bibitem{epfl} Claudio Favi and Edoardo Charbon, \textsl{A 17ps Time-to-Digital Converter Implemented in 65nm FPGA Technology}, ACM 2009, \url{http://infoscience.epfl.ch/record/139431}
