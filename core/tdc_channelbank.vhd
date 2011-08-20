@@ -94,8 +94,8 @@ entity tdc_channelbank is
 end entity;
 
 architecture rtl of tdc_channelbank is
-signal detect_o               : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-signal raw_o                  : std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
+signal detect                 : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+signal raw                    : std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
 signal coarse_counter         : std_logic_vector(g_COARSE_COUNT-1 downto 0);
 signal current_channel_onehot : std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
 signal current_channel        : std_logic_vector(f_log2_size(g_CHANNEL_COUNT)-1 downto 0);
