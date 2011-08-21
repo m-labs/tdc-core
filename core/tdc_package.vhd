@@ -22,6 +22,51 @@ use ieee.std_logic_1164.all;
 
 package tdc_package is
 
+component tdc is
+    generic(
+        g_CHANNEL_COUNT  : positive := 2;
+        g_CARRY4_COUNT   : positive := 100;
+        g_RAW_COUNT      : positive := 9;
+        g_FP_COUNT       : positive := 13;
+        g_COARSE_COUNT   : positive := 25;
+        g_RO_LENGTH      : positive := 20;
+        g_FCOUNTER_WIDTH : positive := 13;
+        g_FTIMER_WIDTH   : positive := 10
+    );
+    port(
+        clk_i        : in std_logic;
+        reset_i      : in std_logic;
+        ready_o      : out std_logic;
+        
+        cc_rst_i     : in std_logic;
+        cc_cy_o      : out std_logic;
+        
+        deskew_i     : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+        
+        signal_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        calib_i      : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        
+        detect_o     : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        polarity_o   : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        raw_o        : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
+        fp_o         : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+        
+        freeze_req_i : in std_logic;
+        freeze_ack_o : out std_logic;
+        cs_next_i    : in std_logic;
+        cs_last_o    : out std_logic;
+        calib_sel_i  : in std_logic;
+        lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        oc_start_i   : in std_logic;
+        oc_ready_o   : out std_logic;
+        oc_freq_o    : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_sfreq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
+    );
+end component;
+
 component tdc_controller is
     generic(
         g_RAW_COUNT      : positive;

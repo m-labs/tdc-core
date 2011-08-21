@@ -66,33 +66,48 @@ entity tdc is
         
         -- Debug interface.
         freeze_req_i : in std_logic;
-        freeze_ack_o : out std_logic
-        -- TODO
+        freeze_ack_o : out std_logic;
+        cs_next_i    : in std_logic;
+        cs_last_o    : out std_logic;
+        calib_sel_i  : in std_logic;
+        lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        oc_start_i   : in std_logic;
+        oc_ready_o   : out std_logic;
+        oc_freq_o    : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_sfreq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
     );
 end entity;
 
 architecture rtl of tdc is
-signal cs_next    : std_logic;
-signal cs_last    : std_logic;
-signal calib_sel  : std_logic;
+signal cs_next     : std_logic;
+signal cs_next_c   : std_logic;
+signal cs_last     : std_logic;
+signal calib_sel   : std_logic;
+signal calib_sel_c : std_logic;
 
-signal lut_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal lut_we     : std_logic;
-signal lut_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
-signal lut_d_r    : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal lut_a       : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal lut_a_c     : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal lut_we      : std_logic;
+signal lut_d_w     : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal lut_d_r     : std_logic_vector(g_FP_COUNT-1 downto 0);
 
-signal c_detect   : std_logic;
-signal c_raw      : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal his_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal his_we     : std_logic;
-signal his_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
-signal his_d_r    : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal c_detect    : std_logic;
+signal c_raw       : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal his_a       : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal his_a_c     : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal his_we      : std_logic;
+signal his_d_w     : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal his_d_r     : std_logic_vector(g_FP_COUNT-1 downto 0);
 
-signal oc_start   : std_logic;
-signal oc_ready   : std_logic;
-signal oc_freq    : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
-signal oc_store   : std_logic;
-signal oc_sfreq   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+signal oc_start    : std_logic;
+signal oc_start_c  : std_logic;
+signal oc_ready    : std_logic;
+signal oc_freq     : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+signal oc_store    : std_logic;
+signal oc_sfreq    : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
 
 signal freeze_ack : std_logic;
 begin
@@ -157,22 +172,22 @@ begin
             reset_i     => reset_i,
             ready_o     => ready_o,
             
-            next_o      => cs_next,
+            next_o      => cs_next_c,
             last_i      => cs_last,
-            calib_sel_o => calib_sel,
+            calib_sel_o => calib_sel_c,
             
-            lut_a_o     => lut_a,
+            lut_a_o     => lut_a_c,
             lut_we_o    => lut_we,
             lut_d_o     => lut_d_w,
             
             c_detect_i  => c_detect,
             c_raw_i     => c_raw,
-            his_a_o     => his_a,
+            his_a_o     => his_a_c,
             his_we_o    => his_we,
             his_d_o     => his_d_w,
             his_d_i     => his_d_r,
 
-            oc_start_o  => oc_start,
+            oc_start_o  => oc_start_c,
             oc_ready_i  => oc_ready,
             oc_freq_i   => oc_freq,
             oc_store_o  => oc_store,
@@ -181,5 +196,18 @@ begin
             freeze_req_i => freeze_req_i,
             freeze_ack_o => freeze_ack
         );
-        freeze_ack_o <= freeze_ack;
+
+    -- Debug interface signals.
+    cs_next <= cs_next_i when (freeze_ack = '1') else cs_next_c;
+    calib_sel <= calib_sel_i when (freeze_ack = '1') else calib_sel_c;
+    lut_a <= lut_a_i when (freeze_ack = '1') else lut_a_c;
+    his_a <= his_a_i when (freeze_ack = '1') else his_a_c;
+    oc_start <= oc_start_i when (freeze_ack = '1') else oc_start_c;
+    freeze_ack_o <= freeze_ack;
+    cs_last_o <= cs_last;
+    lut_d_o <= lut_d_r;
+    his_d_o <= his_d_r;
+    oc_ready_o <= oc_ready;
+    oc_freq_o <= oc_freq;
+    oc_sfreq_o <= oc_sfreq;
 end architecture;
