@@ -43,54 +43,58 @@ entity tdc is
         g_FTIMER_WIDTH   : positive := 10
     );
     port(
-        clk_i       : in std_logic;
-        reset_i     : in std_logic;
-        ready_o     : out std_logic;
+        clk_i        : in std_logic;
+        reset_i      : in std_logic;
+        ready_o      : out std_logic;
         
         -- Coarse counter control.
-        cc_rst_i    : in std_logic;
-        cc_cy_o     : out std_logic;
+        cc_rst_i     : in std_logic;
+        cc_cy_o      : out std_logic;
         
         -- Per-channel deskew inputs.
-        deskew_i    : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+        deskew_i     : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
         
         -- Per-channel signal inputs.
-        signal_i    : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-        calib_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        signal_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        calib_i      : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
         
          -- Per-channel detection outputs.
-        detect_o    : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-        polarity_o  : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
-        raw_o       : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
-        fp_o        : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0)
+        detect_o     : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        polarity_o   : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        raw_o        : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
+        fp_o         : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
         
         -- Debug interface.
+        freeze_req_i : in std_logic;
+        freeze_ack_o : out std_logic
         -- TODO
     );
 end entity;
 
 architecture rtl of tdc is
-signal cs_next   : std_logic;
-signal cs_last   : std_logic;
-signal calib_sel : std_logic;
+signal cs_next    : std_logic;
+signal cs_last    : std_logic;
+signal calib_sel  : std_logic;
 
-signal lut_a     : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal lut_we    : std_logic;
-signal lut_d_w   : std_logic_vector(g_FP_COUNT-1 downto 0);
-signal lut_d_r   : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal lut_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal lut_we     : std_logic;
+signal lut_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal lut_d_r    : std_logic_vector(g_FP_COUNT-1 downto 0);
 
-signal c_detect  : std_logic;
-signal c_raw     : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal his_a     : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal his_we    : std_logic;
-signal his_d_w   : std_logic_vector(g_FP_COUNT-1 downto 0);
-signal his_d_r   : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal c_detect   : std_logic;
+signal c_raw      : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal his_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal his_we     : std_logic;
+signal his_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal his_d_r    : std_logic_vector(g_FP_COUNT-1 downto 0);
 
-signal oc_start  : std_logic;
-signal oc_ready  : std_logic;
-signal oc_freq   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
-signal oc_store  : std_logic;
-signal oc_sfreq  : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+signal oc_start   : std_logic;
+signal oc_ready   : std_logic;
+signal oc_freq    : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+signal oc_store   : std_logic;
+signal oc_sfreq   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+
+signal freeze_ack : std_logic;
 begin
     cmp_channelbank: tdc_channelbank
         generic map(
@@ -104,42 +108,42 @@ begin
             g_FTIMER_WIDTH   => g_FTIMER_WIDTH
         )
         port map(
-            clk_i       => clk_i,
-            reset_i     => reset_i,
+            clk_i        => clk_i,
+            reset_i      => reset_i,
              
-            cc_rst_i    => cc_rst_i,
-            cc_cy_o     => cc_cy_o,
-            next_i      => cs_next,
-            last_o      => cs_last,
-            calib_sel_i => calib_sel,
+            cc_rst_i     => cc_rst_i,
+            cc_cy_o      => cc_cy_o,
+            next_i       => cs_next,
+            last_o       => cs_last,
+            calib_sel_i  => calib_sel,
             
-            deskew_i    => deskew_i,
+            deskew_i     => deskew_i,
              
-            signal_i    => signal_i,
-            calib_i     => calib_i,
+            signal_i     => signal_i,
+            calib_i      => calib_i,
              
-            detect_o    => detect_o,
-            polarity_o  => polarity_o,
-            raw_o       => raw_o,
-            fp_o        => fp_o,
+            detect_o     => detect_o,
+            polarity_o   => polarity_o,
+            raw_o        => raw_o,
+            fp_o         => fp_o,
              
-            lut_a_i     => lut_a,
-            lut_we_i    => lut_we,
-            lut_d_i     => lut_d_w,
-            lut_d_o     => lut_d_r,
+            lut_a_i      => lut_a,
+            lut_we_i     => lut_we,
+            lut_d_i      => lut_d_w,
+            lut_d_o      => lut_d_r,
             
-            c_detect_o  => c_detect,
-            c_raw_o     => c_raw,
-            his_a_i     => his_a,
-            his_we_i    => his_we,
-            his_d_i     => his_d_w,
-            his_d_o     => his_d_r,
+            c_detect_o   => c_detect,
+            c_raw_o      => c_raw,
+            his_a_i      => his_a,
+            his_we_i     => his_we,
+            his_d_i      => his_d_w,
+            his_d_o      => his_d_r,
 
-            oc_start_i  => oc_start,
-            oc_ready_o  => oc_ready,
-            oc_freq_o   => oc_freq,
-            oc_store_i  => oc_store,
-            oc_sfreq_o  => oc_sfreq
+            oc_start_i   => oc_start,
+            oc_ready_o   => oc_ready,
+            oc_freq_o    => oc_freq,
+            oc_store_i   => oc_store,
+            oc_sfreq_o   => oc_sfreq
         );
     
     cmp_controller: tdc_controller
@@ -172,6 +176,10 @@ begin
             oc_ready_i  => oc_ready,
             oc_freq_i   => oc_freq,
             oc_store_o  => oc_store,
-            oc_sfreq_i  => oc_sfreq
+            oc_sfreq_i  => oc_sfreq,
+            
+            freeze_req_i => freeze_req_i,
+            freeze_ack_o => freeze_ack
         );
+        freeze_ack_o <= freeze_ack;
 end architecture;
