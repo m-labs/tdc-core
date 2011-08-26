@@ -85,6 +85,7 @@ signal mul_d1    : std_logic_vector(g_FP_COUNT+g_FCOUNTER_WIDTH-1 downto 0);
 
 signal div_start    : std_logic;
 signal div_ready    : std_logic;
+signal div_divisor  : std_logic_vector(g_FP_COUNT+g_FCOUNTER_WIDTH-1 downto 0);
 signal div_quotient : std_logic_vector(g_FP_COUNT+g_FCOUNTER_WIDTH-1 downto 0);
 signal div_qsat     : std_logic_vector(g_FP_COUNT-1 downto 0);
 
@@ -174,15 +175,13 @@ begin
             
             start_i     => div_start,
             dividend_i  => mul_d1,
-            divisor_i(g_FP_COUNT+g_FCOUNTER_WIDTH-1 downto g_FCOUNTER_WIDTH)
-                => (others => '0'),
-            divisor_i(g_FCOUNTER_WIDTH-1 downto 0)
-                => oc_freq_i,
+            divisor_i   => div_divisor,
             
             ready_o     => div_ready,
             quotient_o  => div_quotient,
             remainder_o => open
         );
+    div_divisor <= (g_FP_COUNT-1 downto 0 => '0') & oc_freq_i;
     process(div_quotient)
     begin
         if div_quotient(g_FP_COUNT+g_FCOUNTER_WIDTH-1 downto g_FP_COUNT)
