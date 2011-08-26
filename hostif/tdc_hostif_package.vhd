@@ -22,6 +22,38 @@ use ieee.std_logic_1164.all;
 
 package tdc_hostif_package is
 
+component tdc_hostif is
+    generic(
+        g_CHANNEL_COUNT  : positive := 2;
+        g_CARRY4_COUNT   : positive := 100;
+        g_RAW_COUNT      : positive := 9;
+        g_FP_COUNT       : positive := 13;
+        g_COARSE_COUNT   : positive := 25;
+        g_RO_LENGTH      : positive := 20;
+        g_FCOUNTER_WIDTH : positive := 13;
+        g_FTIMER_WIDTH   : positive := 10
+    );
+    port(
+        rst_n_i   : in std_logic;
+        wb_clk_i  : in std_logic;
+        
+        wb_addr_i : in std_logic_vector(7 downto 0);
+        wb_data_i : in std_logic_vector(31 downto 0);
+        wb_data_o : out std_logic_vector(31 downto 0);
+        wb_cyc_i  : in std_logic;
+        wb_sel_i  : in std_logic_vector(3 downto 0);
+        wb_stb_i  : in std_logic;
+        wb_we_i   : in std_logic;
+        wb_ack_o  : out std_logic;
+        wb_irq_o  : out std_logic;
+        
+        cc_rst_i  : in std_logic;
+        cc_cy_o   : out std_logic;
+        signal_i  : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        calib_i   : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0)
+    );
+end component;
+
 component tdc_wb is
   port (
     rst_n_i                                  : in     std_logic;
