@@ -27,7 +27,7 @@ use work.tdc_package.all;
 entity tb_controller is
     generic(
         g_RAW_COUNT      : positive := 3;
-        g_FP_COUNT       : positive := 4;
+        g_FP_COUNT       : positive := 5;
         g_FCOUNTER_WIDTH : positive := 3
     );
 end entity;
@@ -159,7 +159,7 @@ begin
         end if;
     end process;
     -- this should divide by 2.
-    oc_freq <= (0 => '1', others => '0');
+    oc_freq <= (1 => '1', others => '0');
     oc_sfreq <= (0 => '1', others => '0');
 
     -- channel mux
@@ -174,6 +174,8 @@ begin
     cs_last <= '1';
     
     process
+    variable v_bin_width: integer;
+    variable v_step: integer;
     begin
         reset <= '1';
         wait until rising_edge(clk);
@@ -181,6 +183,13 @@ begin
         wait until rising_edge(clk);
         
         wait until ready = '1';
+        
+        -- verify written LUT contents
+        v_bin_width := 2**(g_FP_COUNT-g_RAW_COUNT);
+        v_step := v_bin_width/2; -- divided by 2 by online calibration (see frequencies above)
+        for i in 1 to 2**g_RAW_COUNT-1 loop
+            assert to_integer(unsigned(lut_memory(i))) = v_step*(i-1) severity failure;
+        end loop;
         
         report "Test passed.";
         end_simulation <= true;
