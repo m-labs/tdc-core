@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-nchan = 30
+nchan = 8
 
 print "peripheral {"
 print "    name = \"TDC\";"

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-nchan = 30
+nchan = 8
 
 for i in range(0,nchan):
     print "tdc_desh%d_o => wbg_des(%d downto %d)," % (i, i*64+63, i*64+32)
