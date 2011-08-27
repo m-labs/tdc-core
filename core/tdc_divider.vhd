@@ -56,7 +56,7 @@ begin
 end function;
 
 signal qr        : std_logic_vector(2*g_WIDTH-1 downto 0);
-signal counter   : std_logic_vector(f_log2_size(g_WIDTH)-1 downto 0);
+signal counter   : std_logic_vector(f_log2_size(g_WIDTH+1)-1 downto 0);
 signal divisor_r : std_logic_vector(g_WIDTH-1 downto 0);
 signal diff      : std_logic_vector(g_WIDTH downto 0);
 signal ready     : std_logic;
