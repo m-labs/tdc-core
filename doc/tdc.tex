@@ -13,7 +13,7 @@
 \usepackage{tweaklist}
 \renewcommand{\itemhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
 
-\title{Time Domain Converter core for Spartan-6 FPGAs}
+\title{Time to Digital Converter core for Spartan-6 FPGAs}
 \author{S\'ebastien Bourdeauducq}
 \date{August 2011}
 \begin{document}
@@ -21,7 +21,7 @@
 \setlength{\parskip}{5pt}
 \maketitle{}
 \section{Specifications}
-The TDC core is a high precision (sub-nanosecond) time to digital conversion core for Xilinx Spartan-6 FPGAs.
+The Time to Digital Converter (TDC) core is a high precision (sub-nanosecond) time to digital conversion core for Xilinx Spartan-6 FPGAs.
 
 \begin{itemize}
 %\addtolength{\itemsep}{-0.5\baselineskip}
@@ -45,7 +45,7 @@ The TDC core is a high precision (sub-nanosecond) time to digital conversion cor
 \item Reports both rising and falling edges of the input signal.
 \item Input signal must not have transitions shorter than the FPGA clock period.
 \item Uses a counter for coarse timing and a calibrated delay line for fine timing.
-\item Delay line implemented with carry chain (CARRY4) primitives.
+\item Delay line implemented with carry chain (\verb!CARRY4!) primitives.
 \item Calibration mechanism:
 \begin{itemize}
 \item at startup (and after receiving a reset command), send random pulses into the delay line (coming from e.g. a on-chip ring oscillator), build histogram, compute delays (as explained in the Fermilab paper \cite{fermilab}, initialize the LUT, and measure the frequency of the compensation ring oscillator.
@@ -88,6 +88,15 @@ The TDC core is a high precision (sub-nanosecond) time to digital conversion cor
 \end{itemize}
 
 \section{Architecture}
+\subsection{Overview}
+The block diagram of the core is given in Figure~\ref{fig:block}.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{block.pdf}
+\caption{Block diagram of the TDC core.}
+\label{fig:block}
+\end{figure}
+
 \subsection{Delay line structure}
 The delay line uses a carry chain. It is made up of \verb!CARRY4! primitives whose \verb!CO! outputs are registered by the dedicated D flip flops of the same slices. The signal is injected at the \verb!CYINIT! pin at the bottom of the carry chain. The \verb!CARRY4! primitives have their \verb!S! inputs hardwired to 1, which means the carry chain becomes a delay line with the signal going unchanged through the \verb!MUXCY! elements (see \cite{s6hdl} for reference). Since each \verb!CARRY4! contains four \verb!MUXCY! elements, the delay line has four times as many taps as there are \verb!CARRY4! primitives.
 
