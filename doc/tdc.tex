@@ -5,10 +5,13 @@
 \usepackage[normalem]{ulem}
 \usepackage[english]{babel}
 \usepackage{listings,babel}
+\usepackage{palatino}
 \lstset{breaklines=true,basicstyle=\ttfamily}
 \usepackage{graphicx}
 \usepackage{moreverb}
 \usepackage{url}
+\usepackage{tweaklist}
+\renewcommand{\itemhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
 
 \title{Time Domain Converter core for Spartan-6 FPGAs}
 \author{S\'ebastien Bourdeauducq}
@@ -18,17 +21,84 @@
 \setlength{\parskip}{5pt}
 \maketitle{}
 \section{Specifications}
+The TDC core is a high precision (sub-nanosecond) time to digital conversion core for Xilinx Spartan-6 FPGAs.
 
-\section{Architecture details}
+\begin{itemize}
+%\addtolength{\itemsep}{-0.5\baselineskip}
+\item Expected precision: 50-100ps (peak to peak).
+\item Fixed point output:
+\begin{itemize}
+\item Integer part is number of FPGA clocks (coarse counter).
+\item 13-bit fractional part.
+\item With a 125MHz FPGA clock, LSB corresponds to 0.98ps.
+\end{itemize}
+\item Typical range: 268ms (using a <25.13>-bit value at 125MHz).
+\begin{itemize}
+\item Number of coarse counter bits configurable with a VHDL generic.
+\end{itemize}
+\item Latency: 6 cycles at 125MHz (not including host interface module).
+\item Multiple channels.
+\begin{itemize}
+\item Configurable with a VHDL generic.
+\item Calibration logic shared between channels.
+\end{itemize}
+\item Reports both rising and falling edges of the input signal.
+\item Input signal must not have transitions shorter than the FPGA clock period.
+\item Uses a counter for coarse timing and a calibrated delay line for fine timing.
+\item Delay line implemented with carry chain (CARRY4) primitives.
+\item Calibration mechanism:
+\begin{itemize}
+\item at startup (and after receiving a reset command), send random pulses into the delay line (coming from e.g. a on-chip ring oscillator), build histogram, compute delays (as explained in the Fermilab paper \cite{fermilab}, initialize the LUT, and measure the frequency of the compensation ring oscillator.
+\item for online temperature/voltage compensation, measure again the frequency of the ring oscillator, compare it to the frequency measured at start-up, linearly interpolate the delays, and update the LUT.
+\end{itemize}
+\item "Wave union" not implemented.
+\item Input signals (without host interface module):
+\begin{itemize}
+\item Input signal.
+\item Calibration signal.
+\item Coarse counter reset.
+\item Per-channel de-skew value.
+\item Full reset (and recalibrate).
+\item Clock.
+\end{itemize}
+\item Output signals (without host interface module):
+\begin{itemize}
+\item Startup calibration in progress.
+\item Periodic counter overflow.
+\item Received rising/falling edge notification:
+\begin{itemize}
+\item Strobe signal.
+\item Rising/falling edge.
+\item Fixed point timestamp.
+\item Raw encoded value from the delay line.
+\end{itemize}
+\end{itemize}
+\item Debug interface:
+\begin{itemize}
+\item Forced switch to the calibration signal.
+\item Access to the histogram values from the startup calibration.
+\item Access to the frequencies of the online calibration ring oscillators.
+\end{itemize}
+\item Optional host/CPU interface module:
+\begin{itemize}
+\item Wishbone slave.
+\item Configuration and status registers.
+\item Interrupts: edge received, counter overflow.
+\end{itemize}
+\end{itemize}
+
+\section{Architecture}
 \subsection{Delay line structure}
 The delay line uses a carry chain. It is made up of \verb!CARRY4! primitives whose \verb!CO! outputs are registered by the dedicated D flip flops of the same slices. The signal is injected at the \verb!CYINIT! pin at the bottom of the carry chain. The \verb!CARRY4! primitives have their \verb!S! inputs hardwired to 1, which means the carry chain becomes a delay line with the signal going unchanged through the \verb!MUXCY! elements (see \cite{s6hdl} for reference). Since each \verb!CARRY4! contains four \verb!MUXCY! elements, the delay line has four times as many taps as there are \verb!CARRY4! primitives.
 
 Using the Xilinx timing model, a surprising observation is that some delay differences between consecutive taps are negative. This probably is at the origin of the ``bubbles'' mentioned in the EPFL paper \cite{epfl}. The schematics given by Xilinx of the \verb!CARRY4! primitive is misleading there, and has probably little to do with the actual transistor-level implementation. The Xilinx documentation \cite{s6hdl} gives a hint by describing the primitive as ``Fast Carry Logic \textit{with Look Ahead}''.
 
-To avoid negative differences, we simply reorder the bits at the output of the delay line to sort the taps by increasing actual delays.
+To avoid negative differences, we simply reorder the bits at the output of the delay line to sort the taps by increasing actual delays. We can then think of the delay line according to Figure~\ref{fig:delaystruct}. The bin widths are uneven, but the incoming signal reaches the taps in order. This last property simplifies the encoder design, since it only has to count the number of identical bits at the beginning of the delay line.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{delaystruct.pdf}
+\caption{Representation of the delay line.}
+\label{fig:delaystruct}
 \end{figure}
 
 \subsection{Calibration mechanism}
@@ -60,8 +130,6 @@ R_{0}(n) = \displaystyle\sum\limits_{i=n}^{N-1}{W_{0}(i)} = \frac{T_{sys}}{C} \c
 R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 \end{equation}
 
-\subsection{Deskew stage}
-
 \section{Implementing the core}
 \begin{verbatim}
 NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
@@ -70,6 +138,7 @@ NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
 \begin{thebibliography}{99}
 \bibitem{s6hdl} Xilinx, \textsl{Spartan-6 Libraries Guide for HDL Designs}, \url{http://www.xilinx.com/support/documentation/sw_manuals/xilinx12_3/spartan6_hdl.pdf}
 \bibitem{epfl} Claudio Favi and Edoardo Charbon, \textsl{A 17ps Time-to-Digital Converter Implemented in 65nm FPGA Technology}, ACM 2009, \url{http://infoscience.epfl.ch/record/139431}
+\bibitem{fermilab} Jinyuan Wu and Zonghan Shi, \textsl{The 10-ps Wave Union TDC: Improving FPGA TDC Resolution beyond Its Cell Delay}, IEEE 2008, \url{http://www-ppd.fnal.gov/EEDOffice-W/Projects/ckm/comadc/PID765918.pdf}
 \end{thebibliography}
 
 \end{document}
