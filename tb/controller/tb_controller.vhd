@@ -26,9 +26,9 @@ use work.tdc_package.all;
 
 entity tb_controller is
     generic(
-        g_RAW_COUNT      : positive := 9;
-        g_FP_COUNT       : positive := 13;
-        g_FCOUNTER_WIDTH : positive := 10
+        g_RAW_COUNT      : positive := 3;
+        g_FP_COUNT       : positive := 4;
+        g_FCOUNTER_WIDTH : positive := 3
     );
 end entity;
 
@@ -44,7 +44,7 @@ signal lut_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal lut_we     : std_logic;
 signal lut_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
 signal c_detect   : std_logic;
-signal c_raw      : std_logic_vector(g_RAW_COUNT-1 downto 0);
+signal c_raw      : std_logic_vector(g_RAW_COUNT-1 downto 0) := (others => '0');
 signal his_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal his_we     : std_logic;
 signal his_d_w    : std_logic_vector(g_FP_COUNT-1 downto 0);
@@ -56,6 +56,10 @@ signal oc_store   : std_logic;
 signal oc_sfreq   : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
 signal freeze_req : std_logic;
 signal freeze_ack : std_logic;
+
+type t_ctlmem is array(0 to 2**g_RAW_COUNT-1) of std_logic_vector(g_FP_COUNT-1 downto 0);
+signal his_memory: t_ctlmem;
+signal lut_memory: t_ctlmem;
 
 signal end_simulation : boolean := false;
 
@@ -91,6 +95,7 @@ begin
             freeze_ack_o => freeze_ack
         );
     
+    -- clock generator
     process
     begin
         clk <= '0';
@@ -102,6 +107,72 @@ begin
         end if;
     end process;
     
+    -- histogram memory
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if his_we = '1' then
+                report "HIS WR: addr=" & integer'image(to_integer(unsigned(his_a)))
+                    & " data=" & integer'image(to_integer(unsigned(his_d_w)));
+                his_memory(to_integer(unsigned(his_a))) <= his_d_w;
+            end if;
+            his_d_r <= his_memory(to_integer(unsigned(his_a)));
+        end if;
+    end process;
+    
+    -- LUT memory
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if lut_we = '1' then
+                report "LUT WR: addr=" & integer'image(to_integer(unsigned(lut_a)))
+                    & " data=" & integer'image(to_integer(unsigned(lut_d_w)));
+                lut_memory(to_integer(unsigned(lut_a))) <= lut_d_w;
+            end if;
+        end if;
+    end process;
+    
+    -- pulse generator
+    process
+    begin
+        c_detect <= '1';
+        c_raw <= std_logic_vector(unsigned(c_raw) + 1);
+        wait until rising_edge(clk);
+        c_detect <= '0';
+        wait until rising_edge(clk);
+        wait until rising_edge(clk);
+        wait until rising_edge(clk);
+    end process;
+    
+    -- frequency counter
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            oc_ready <= '1';
+            if oc_start = '1' then
+                report "FRC: start measurement";
+                oc_ready <= '0';
+            end if;
+            if oc_store = '1' then
+                report "FRC: store measurement";
+            end if;
+        end if;
+    end process;
+    -- this should divide by 2.
+    oc_freq <= (0 => '1', others => '0');
+    oc_sfreq <= (0 => '1', others => '0');
+
+    -- channel mux
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if cs_next = '1' then
+                report "Next channel";
+            end if;
+        end if;
+    end process;
+    cs_last <= '1';
+    
     process
     begin
         reset <= '1';
@@ -109,7 +180,7 @@ begin
         reset <= '0';
         wait until rising_edge(clk);
         
-
+        wait until ready = '1';
         
         report "Test passed.";
         end_simulation <= true;
