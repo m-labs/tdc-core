@@ -165,9 +165,19 @@ Note that when $f < f_{0}$, some values can go above the maximum fractional part
 \subsection{Ports}
 
 \subsection{Synthesis and physical implementation}
+\subsubsection{False timing paths}
+The calibration selection signal is driven synchronously by the controller, and the output of the multiplexer goes through the delay line before being recaptured synchronously by the input flip-flops. The automatic place and route tool incorrectly assumes this is a regular synchronous path. Since the delay line is always longer than a clock period, it aborts with a message saying that the components delays alone exceed the timing constraints. The problem is resolved by adding ``timing ignore'' (TIG) constraints into the UCF file, using a syntax based on the example below:
 \begin{verbatim}
 NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
 \end{verbatim}
+
+One such constraint must be added per channel, and the number ``0'' incremented accordingly.
+
+\subsubsection{Delay line placement}
+The delay line must be placed in a way that minimizes the delay from the input signals IOBs. The reason is that this delay is affected by PVT variations that are not compensated for.
+
+\subsubsection{Ring oscillator placement}
+To be most effective, the ring oscillator must be placed close to the delay line of the same channel.
 
 \section{Host interface module}
 
