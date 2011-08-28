@@ -157,12 +157,61 @@ Online calibration is performed with a simple linear interpolation of the delays
 R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 \end{equation}
 
-Note that when $f < f_{0}$, some values can go above the maximum fractional part value of $1 - 2^{-F}$ and might not fit in the LUT anymore. To solve this problem, all LUT values contain a configurable amount of \textit{guard bits}, which are integer part bits used to contain the overflow when the situation appears.
+Note that when $f < f_{0}$, some values can go above the maximum fractional part value of $1 - 2^{-F}$ and might not fit in the LUT anymore. However, those correspond to delays that now exceed one clock period, and therefore they should almost never get used. In case of overflow, the controller saturates the result by using the maximum value $1 - 2^{-F}$ in order to give the best approximation in case those LUT entries still get used.
 
 \section{Implementing the core}
 \subsection{Generics}
+The top-level entity \verb!tdc! has the following generics:
+\begin{itemize}
+\item \verb!g_CHANNEL_COUNT! is the number of channels supported by the core. It can be arbitrarily large. However, because the control logic is shared, adding more channels increases the startup calibration time and the delay between two consecutive online calibrations of any given channel.
+\item \verb!g_CARRY4_COUNT! is the number of \verb!CARRY4! elements in the delay line of each channel. Each \verb!CARRY4! has 4 outputs, so the number of taps of the delay line is $4 \cdot \verb!g_CARRY4_COUNT!$.
+\item \verb!g_RAW_COUNT! represents the number of bits at the output of the encoder. It should be set to the smallest value that verifies $4\cdot \verb!g_CARRY4_COUNT! \le 2^{\verb!g_RAW_COUNT!}-1$.
+\item \verb!g_FP_COUNT! defines the number of desired digits after the radix point.
+\item \verb!g_COARSE_COUNT! is the size, in bits, of the coarse counter which is incremented at each cycle.
+\item \verb!g_RO_LENGTH! defines how many \verb!LUT! primitives used as inverters are chained in the ring oscillator of each channel. For the ring oscillators to operate, this number must be odd.
+\item \verb!g_FCOUNTER_WIDTH! is the width, in bits, of the counter used to measure the frequency of the ring oscillator. Increasing this width allows for a more precise frequency measurement.
+\item \verb!g_FTIMER_WIDTH! defines the duration during which the frequency counter will count the rising edges of the ring oscillator signal. This duration is approximately equal to $2^{\verb!g_FTIMER_WIDTH!}$ system clock cycles. The duration should be small enough so that the counter (whose size is \verb!g_FCOUNTER_WIDTH! bits) will never overflow. It should be large enough so that the maximum ``dynamic range'' of the counter is used.
+\end{itemize}
 
 \subsection{Ports}
+The top-level entity has the following ports. All signals are synchronous to the system clock and active high.
+\begin{itemize}
+\item \verb!clk_i! is the system clock.
+\item \verb!reset_i! is the active high synchronous global reset. The core performs startup calibration after this signal has been asserted.
+\item \verb!ready_o! is held high after the startup calibration is complete.
+\item \verb!cc_rst_i! resets the coarse counter.
+\item \verb!cc_cy_o! is pulsed when the coarse counter overflow. In other words, it is the coarse counter carry output.
+\item \verb!deskew_i! defines the per-channel deskew values added to all measurements. Each channel uses \verb!g_COARSE_COUNT!+\verb!g_FP_COUNT! bits. The value can be negative, using two's complement representation.
+\item \verb!signal_i! is the per-channel signal input (one bit per channel).
+\item \verb!calib_i! is the per-channel calibration signal input (one bit per channel). The calibration signal should not have transitions shorter than \textbf{two} periods of the system clock. If an oscillator is used to generate this signal, its frequency must be set to less than \textbf{one quarter} of the system clock.
+\item \verb!detect_o! is pulsed after a transition of the input signal (one bit per channel). This signal should be ignored when \verb!ready_o! is low.
+\item \verb!polarity_o! indicates the detected edge type. If the value is 1, it means the core has detected a rising edge. If it is 0, it means a falling edge. There is one bit per channel.
+\item \verb!raw_o! gives the raw encoded timestamp, i.e.\ the number of reached taps in the delay line. There are \verb!g_RAW_COUNT! bits per channel.
+\item \verb!fp_o! is the fixed-point calibrated timestamp. There are \verb!g_COARSE_COUNT!+\verb!g_FP_COUNT! bits for each channel.
+\end{itemize}
+
+The signals \verb!deskew_i!, \verb!signal_i!, \verb!calib_i!, \verb!polarity_o!, \verb!raw_o! and \verb!fp_o! correspond to multiple channels. The vectors of each channel are simply concatenated to form one larger vector, with the first channel taking the least significant bits, the second channel taking the next bits, and so forth. For example, if \verb!g_RAW_COUNT! is 10 and \verb!g_CHANNEL_COUNT! is 3, channel 0 will use bits 0 to 9 of \verb!raw_o!, channel 1 will use bits 10 to 19, and channel 2 will use bits 20 to 29.
+
+For each channel, the signals \verb!polarity_o!, \verb!raw_o! and \verb!fp_o! are strobed by the \verb!detect_o! signal. Additionally, they remain constant until the next assertion of \verb!detect_o!.
+
+\subsection{Debug ports}
+The debug interface allows external access to LUT contents, histogram contents, and frequency counter. If it is not desired, connect \verb!freeze_req_i! to 0. The other signals then become ``don't-care''.
+\begin{itemize}
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\item \verb!!
+\end{itemize}
 
 \subsection{Synthesis and physical implementation}
 \subsubsection{False timing paths}
