@@ -126,27 +126,38 @@ In the formulas below:
 \item $H(n)$ is the number of hits in the histogram at output $n$. A hit at output $n$ means that the signal propagated down to output $n$, without reaching output $n-1$.
 \item $W(n)$ is the width of bin $n$.
 \item $C = \displaystyle\sum\limits_{n=0}^{N-1} H(n)$ is the total number of hits in the histogram.
-\item $R(n)$ is the time stamp of an event whose signal propagated down to output $n$ (without reaching output $n-1$), measured backwards from the clock tick.
+\item $R(n)$ is the timestamp of an event whose signal propagated down to output $n$ (without reaching output $n-1$), measured backwards from the clock tick.
 \item $f$ (respectively $f_{0}$) is the current (respectively reference) frequency of the online calibration ring oscillator.
 \end{itemize}
 
 \subsubsection{Offline calibration}
+We take the first output of the delay line to be the origin of the time measurements, and we define:
 \begin{equation}
 W_{0}(N-1) = 0
 \end{equation}
+
+The width of other bins is proportional to their respective number of counts in the histogram. The widths sum up to a clock period. This leads to the following equation:
 \begin{equation}
 W_{0}(n) = \frac{H(n+1)}{C} \cdot T_{sys}
 \end{equation}
 
+The timestamp is the sum of the widths of the traversed bins:
 \begin{equation}
 R_{0}(n) = \displaystyle\sum\limits_{i=n}^{N-1}{W_{0}(i)} = \frac{T_{sys}}{C} \cdot \displaystyle\sum\limits_{i=n}^{N-1}{H(i)}
 \end{equation}
 
-\subsubsection{Online calibration}
+In the TDC core, the unit is the clock period, and the output has $F$ base 2 digits after the radix points. The controller also chooses\footnote{This choice was made for design simplicity reasons, and the precision can be improved by increasing C.} $C=2^F$. Expressed in units of $2^{-F}$ clock periods (which is the weight of the least significant bit of the fixed-point output), we have:
+\begin{equation}
+\frac{T_{sys}}{C}=1
+\end{equation}
 
+\subsubsection{Online calibration}
+Online calibration is performed with a simple linear interpolation of the delays relative to the ring oscillator frequencies:
 \begin{equation}
 R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 \end{equation}
+
+Note that when $f < f_{0}$, some values can go above the maximum fractional part value of $1 - 2^{-F}$ and might not fit in the LUT anymore. To solve this problem, all LUT values contain a configurable amount of \textit{guard bits}, which are integer part bits used to contain the overflow when the situation appears.
 
 \section{Implementing the core}
 \subsection{Generics}
