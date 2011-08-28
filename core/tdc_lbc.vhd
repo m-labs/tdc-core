@@ -82,6 +82,12 @@ signal polarity_d1 : std_logic;
 signal polarity_d2 : std_logic;
 signal count_reg   : std_logic_vector(g_N-1 downto 0);
 signal d_completed : std_logic_vector(2**g_N-2 downto 0);
+
+-- enable retiming
+attribute register_balancing: string;
+attribute register_balancing of count_reg: signal is "backward";
+attribute register_balancing of count_o: signal is "backward";
+
 begin
     g_expand: if g_NIN < 2**g_N-1 generate
         d_completed <= d_i & (2**g_N-1-g_NIN-1 downto 0 => not polarity);
