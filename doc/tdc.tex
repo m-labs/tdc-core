@@ -213,7 +213,13 @@ The debug interface allows external access to LUT contents, histogram contents, 
 \item \verb!!
 \end{itemize}
 
-\subsection{Synthesis and physical implementation}
+\subsection{Synthesis and physical implementation notes}
+\subsubsection{Retiming}
+The encoder design relies on the synthesis tool to push its two pipelining registers into the processing logic. The VHDL code sets the Xst-specific \verb!register_balancing! property on the registered signals for this optimization to happen. Make sure that your synthesis tool honors this property (or its equivalent), or enable retiming globally in your design.
+
+\subsubsection{Full implementation of the ring oscillator}
+Even when the optimization of instantiated primitives is disabled in the Xst options, it still turns the chain of inverting \verb!LUT! primitives into a single \verb!LUT!, which renders the ring oscillator inoperative. To prevent this, the Xst-specific \verb!keep! property is set by the source code on the internal ring oscillator signals. Make sure that your synthesizer honors it.
+
 \subsubsection{False timing paths}
 The calibration selection signal is driven synchronously by the controller, and the output of the multiplexer goes through the delay line before being recaptured synchronously by the input flip-flops. The automatic place and route tool incorrectly assumes this is a regular synchronous path. Since the delay line is always longer than a clock period, it aborts with a message saying that the components delays alone exceed the timing constraints. The problem is resolved by adding ``timing ignore'' (TIG) constraints into the UCF file, using a syntax based on the example below:
 \begin{verbatim}
