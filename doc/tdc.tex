@@ -24,12 +24,11 @@
 The Time to Digital Converter (TDC) core is a high precision (sub-nanosecond) time to digital conversion core for Xilinx Spartan-6 FPGAs.
 
 \begin{itemize}
-%\addtolength{\itemsep}{-0.5\baselineskip}
 \item Expected precision: 50-100ps (peak to peak).
 \item Fixed point output:
 \begin{itemize}
 \item Integer part is number of FPGA clocks (coarse counter).
-\item 13-bit fractional part.
+\item 13-bit fractional part (configurable with a VHDL generic).
 \item With a 125MHz FPGA clock, LSB corresponds to 0.98ps.
 \end{itemize}
 \item Typical range: 268ms (using a <25.13>-bit value at 125MHz).
@@ -43,7 +42,7 @@ The Time to Digital Converter (TDC) core is a high precision (sub-nanosecond) ti
 \item Calibration logic shared between channels.
 \end{itemize}
 \item Reports both rising and falling edges of the input signal.
-\item Input signal must not have transitions shorter than the FPGA clock period.
+\item Input signal must not have transitions shorter than the FPGA clock period (e.g.\ the frequency of the input signal must be less than half of the FPGA clock).
 \item Uses a counter for coarse timing and a calibrated delay line for fine timing.
 \item Delay line implemented with carry chain (\verb!CARRY4!) primitives.
 \item Calibration mechanism:
@@ -97,6 +96,16 @@ The block diagram of the core is given in Figure~\ref{fig:block}.
 \label{fig:block}
 \end{figure}
 
+The signal to be timestamped is injected into a tapped delay line to obtain a fine time measurement (below the clock period). The total delay of the delay line must be greater than the clock period. At each clock tick, an encoder counts the taps the signal has reached and gives a \textit{raw} measurement of the timestamp of the signal within the current clock cycle. This raw value is fed into a look-up table (LUT) which converts it into a calibrated value expressed in subdivisions of the clock cycle, called the \textit{fractional} value. Finally, in the \textit{deskew} stage, the fractional value is combined with the index of the current clock cycle given by the coarse counter, and the resulting fixed-point value is added a user-defined constant to enable the TDC core to directly generate timestamps relative to the source of the system clock.
+
+The main difficulty with this system is that the delay line is subject to process, temperature and voltage (PVT) induced variations, and it needs to be calibrated against them.
+
+To generate the LUT contents, the controller switches to the calibration signal. The key property of the calibration signal is that the probability density of its transition timestamps within a system clock cycle must be constant. The controller measures the raw timestamps and books a histogram. Because of the constant probability density, the heights of the histogram bars are approximately proportional to the delays between the taps of the delay line after enough measurements have been taken. Further, the last tap to have recorded a signal transition corresponds to a delay equal to the system clock period. This enables the controller to build the initial contents of the LUT. This process is called \textit{startup calibration}.
+
+The drawback of the startup calibration is that the system cannot operate while the calibration is taking place. Therefore, a process of \textit{online calibration} has been devised. Each channel contains a ring oscillator that is placed close to the delay line. The controller periodically measures the frequency of this ring oscillator, compares it to the frequency that was measured at the time of startup calibration, linearly interpolates the fractional timestamps, and updates the LUT. This allows compensation of temperature and voltage effects while the system keeps running.
+
+The system gives timestamps of both rising and falling edges of the incoming signal. The rising edges are discerned from the falling edges using the ``polarity'' output.
+
 \subsection{Delay line structure}
 The delay line uses a carry chain. It is made up of \verb!CARRY4! primitives whose \verb!CO! outputs are registered by the dedicated D flip flops of the same slices. The signal is injected at the \verb!CYINIT! pin at the bottom of the carry chain. The \verb!CARRY4! primitives have their \verb!S! inputs hardwired to 1, which means the carry chain becomes a delay line with the signal going unchanged through the \verb!MUXCY! elements (see \cite{s6hdl} for reference). Since each \verb!CARRY4! contains four \verb!MUXCY! elements, the delay line has four times as many taps as there are \verb!CARRY4! primitives.
 
@@ -110,7 +119,7 @@ To avoid negative differences, we simply reorder the bits at the output of the d
 \label{fig:delaystruct}
 \end{figure}
 
-\subsection{Calibration mechanism}
+\subsection{Calibration details}
 In the formulas below:
 \begin{itemize}
 \item $T_{sys}$ is the system clock period.
@@ -140,9 +149,16 @@ R(n) = \frac{f_{0}}{f} \cdot R_{0}(n)
 \end{equation}
 
 \section{Implementing the core}
+\subsection{Generics}
+
+\subsection{Ports}
+
+\subsection{Synthesis and physical implementation}
 \begin{verbatim}
 NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
 \end{verbatim}
+
+\section{Host interface module}
 
 \begin{thebibliography}{99}
 \bibitem{s6hdl} Xilinx, \textsl{Spartan-6 Libraries Guide for HDL Designs}, \url{http://www.xilinx.com/support/documentation/sw_manuals/xilinx12_3/spartan6_hdl.pdf}
