@@ -107,6 +107,7 @@ The drawback of the startup calibration is that the system cannot operate while 
 The system gives timestamps of both rising and falling edges of the incoming signal. The rising edges are discerned from the falling edges using the ``polarity'' output.
 
 \subsection{Delay line structure}
+\label{delaystruct}
 The delay line uses a carry chain. It is made up of \verb!CARRY4! primitives whose \verb!CO! outputs are registered by the dedicated D flip flops of the same slices. The signal is injected at the \verb!CYINIT! pin at the bottom of the carry chain. The \verb!CARRY4! primitives have their \verb!S! inputs hardwired to 1, which means the carry chain becomes a delay line with the signal going unchanged through the \verb!MUXCY! elements (see \cite{s6hdl} for reference). Since each \verb!CARRY4! contains four \verb!MUXCY! elements, the delay line has four times as many taps as there are \verb!CARRY4! primitives.
 
 Using the Xilinx timing model, a surprising observation is that some delay differences between consecutive taps are negative. This probably is at the origin of the ``bubbles'' mentioned in the EPFL paper \cite{epfl}. The schematics given by Xilinx of the \verb!CARRY4! primitive is misleading there, and has probably little to do with the actual transistor-level implementation. The Xilinx documentation \cite{s6hdl} gives a hint by describing the primitive as ``Fast Carry Logic \textit{with Look Ahead}''.
@@ -238,6 +239,9 @@ The delay line must be placed in a way that minimizes the delay from the input s
 
 \subsubsection{Ring oscillator placement}
 To be most effective, the ring oscillator must be placed close to the delay line of the same channel.
+
+\subsubsection{Reordering taps}
+To avoid negative delay differences (section \ref{delaystruct}), examine the timing report for the delay line and edit \verb!tdc_channel.vhd! to reorder the taps by increasing delays.
 
 \section{Host interface module}
 The optional host interface module connects the TDC core to a Wishbone bus. It is a separate top-level entity named \verb!tdc_hostif! that instantiates \verb!tdc!. It implements a Wishbone slave interface, which is automatically generated with \verb!wbgen2!.
