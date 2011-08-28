@@ -196,21 +196,26 @@ For each channel, the signals \verb!polarity_o!, \verb!raw_o! and \verb!fp_o! ar
 
 \subsection{Debug ports}
 The debug interface allows external access to LUT contents, histogram contents, and frequency counter. If it is not desired, connect \verb!freeze_req_i! to 0. The other signals then become ``don't-care''.
+
+To enable the debug interface, assert \verb!freeze_req_i! and keep it asserted. The controller will stop performing online calibration and give you access to the channel bank controls. When the controller has given you access, it asserts the \verb!freeze_ack_o! signal. To re-enable the controller and resume the online calibration cycles, simply deassert \verb!freeze_req_i!.
+
+The debug interface operates on a single channel at once. The channels are selected in turn using the \verb!cs_next_i! and \verb!cs_last_o! signals.
+
+All signals are synchronous to the system clock and active high.
 \begin{itemize}
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
-\item \verb!!
+\item \verb!freeze_req_i! requests control of the channel bank and activation of the debug interface.
+\item \verb!freeze_ack_o! acknowledges activation of the debug interface.
+\item \verb!cs_next_i! is pulsed to switch to the next channel. If \verb!cs_last_o! is active, it switches to the first channel.
+\item \verb!cs_last_o! indicates that the debug interface currently operates on the last channel.
+\item \verb!calib_sel_i! switches the input of the current channel to the calibration signal.
+\item \verb!lut_a_i! selects an address to read in the current channel's LUT.
+\item \verb!lut_d_o! returns the read LUT data one cycle of latency after a valid \verb!lut_a_i! signal.
+\item \verb!his_a_i! selects an address to read in the current channel's histogram.
+\item \verb!his_d_o! returns the read histogram data one cycle of latency after a valid \verb!his_a_i! signal.
+\item \verb!oc_start_i! is pulsed to start a ring oscillator frequency measurement in the current channel.
+\item \verb!oc_ready_o! is asserted when the frequency counter is not currently performing a measurement.
+\item \verb!oc_freq_o! returns the measured ring oscillator frequency. It is valid only when \verb!oc_ready_o! is asserted.
+\item \verb!oc_sfreq_o! returns the ring oscillator frequency of the current channel that was stored during startup calibration.
 \end{itemize}
 
 \subsection{Synthesis and physical implementation notes}
