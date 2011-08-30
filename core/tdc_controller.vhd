@@ -17,6 +17,11 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This is the controller for the channel bank. It is in charge of sequencing
+-- and performing the startup and online calibrations for all channels.
+-- It books the histograms and computes and loads the LUTs of the channels.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

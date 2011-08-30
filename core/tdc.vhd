@@ -17,6 +17,10 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- Top level module of the TDC core, contains all logic except the optional
+-- host interface.
+
 library ieee;
 use ieee.std_logic_1164.all;
 

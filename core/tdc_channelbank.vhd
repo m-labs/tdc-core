@@ -19,6 +19,22 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This module instantiates all the channels and provides a control interface
+-- independent of the number of channels.
+-- It provides a simple two-wire interface to select the current channel to
+-- operate one, using the next_i (switch to next channel) and last_o (current
+-- channel is the current channel, next channel is the first channel).
+-- It provides multiplexed access to the LUT of the current channel, to the
+-- histogram of the current channel, and to the ring oscillator frequency
+-- of the current channel.
+--
+-- To save resources:
+--  * the histogram is implemented as one large block RAM common to all
+--    channels
+--  * the frequency counter logic is shared among all channels, each channel
+--    only implements a ring oscillator.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

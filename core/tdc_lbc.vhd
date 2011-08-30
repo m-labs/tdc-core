@@ -17,6 +17,11 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- Encoder for the delay line. Counts the number of leading bits equal to the
+-- current polarity. The current polarity is the opposite of the most
+-- significant bit of the input vector from the previous cycle.
+
 library ieee;
 use ieee.std_logic_1164.all;
 

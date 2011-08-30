@@ -17,6 +17,17 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- The delay line uses a carry chain. It is made up of CARRY4 primitives whose
+-- CO outputs are registered by the dedicated D flip flops of the same slices.
+-- The signal is injected at the CYINIT pin at the bottom of the carry chain.
+-- The CARRY4 primitives have their S inputs hardwired to 1, which means the
+-- carry chain becomes a delay line with the signal going unchanged through the
+-- MUXCY elements. Since each CARRY4 contains four MUXCY elements, the delay
+-- line has four times as many taps as there are CARRY4 primitives.
+--
+-- There is a second layer of registers to prevent metastability.
+
 library ieee;
 use ieee.std_logic_1164.all;
 

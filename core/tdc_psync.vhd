@@ -17,6 +17,13 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- Converts a single clock cycle pulse in the clk_src_i domain into a single
+-- clock cycle pulse in the clk_dst_i domain.
+-- It does so by converting the pulse into a level change, synchronizing
+-- this level change into the destination domain by double latching, and
+-- finally restoring the pulse in the destination domain.
+
 library ieee;
 use ieee.std_logic_1164.all;
 

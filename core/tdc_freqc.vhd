@@ -2,7 +2,7 @@
 -- TDC Core / CERN
 -------------------------------------------------------------------------------
 --
--- unit name: tdc_freqm
+-- unit name: tdc_freqc
 --
 -- author: Sebastien Bourdeauducq, sebastien@milkymist.org
 --
@@ -16,6 +16,10 @@
 -------------------------------------------------------------------------------
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
+
+-- DESCRIPTION:
+-- Counts the number of rising edges in clk_m_i for 2^g_TIMER_WIDTH-1 periods
+-- of clk_i and returns the result. All signals are synchronous to clk_i.
 
 library ieee;
 use ieee.std_logic_1164.all;

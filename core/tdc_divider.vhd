@@ -17,6 +17,11 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- Sequentially computes the Euclidean division of dividend_i by divisor_i.
+-- Returns quotient and remainder. Works with unsigned integers of g_WIDTH
+-- bits each.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

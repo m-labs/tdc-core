@@ -17,6 +17,13 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- Ring oscillator built by chaining together an odd number of LUTs used
+-- as inverters. The first LUT has a second input which forces its output
+-- to 0. This is useful to initialize the ring oscillator and make sure
+-- that only one wave is traveling through it, and to force the output of the
+-- oscillator to 0 at any time.
+
 library ieee;
 use ieee.std_logic_1164.all;
 

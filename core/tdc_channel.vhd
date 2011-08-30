@@ -17,6 +17,14 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This contains the elements needed for each channel:
+--  * Delay line
+--  * Encoder
+--  * LUT
+--  * Deskew stage
+--  * Online calibration ring oscillator
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
