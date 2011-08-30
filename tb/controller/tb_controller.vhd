@@ -17,6 +17,32 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This test verifies the correct operation of the controller in the following
+-- scenario:
+-- 1. The test bench resets the controller, which begins to perform startup
+-- calibration operations.
+-- 2. The test bench sends a series of pulses with incrementing fine time
+-- stamps into the controller.
+-- 3. The test bench provides a model of the histogram memory to the
+-- controller. Because of the continuously incrementing time stamps provided by
+-- the test bench, the controller books a histogram with the same
+-- 2^(g_FP_COUNT-g_RAW_COUNT) value everywhere.
+-- 4. The controller reads the frequency of the calibration ring oscillator,
+-- and the test bench returns 1.
+-- 5. The controller performs a first round of online calibration. It reads
+-- again the frequency of the ring oscillator, and the test bench returns 2.
+-- This means that all delays should be halved.
+-- 6. The controller builds the LUT. The test bench provides a model of the
+-- memory for this purpose.
+-- 7. The controller asserts the ready signal, and this terminates the
+-- simulation.
+--
+-- The test bench then verifies that the LUT entries from i = 1 to 
+-- i = 2^g_RAW_COUNT-1 all have the correct value, and reports a failed
+-- assertion otherwise:
+-- LUT(i) = 1/2 * (i-1) * 2^(g_FP_COUNT-g_RAW_COUNT)
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

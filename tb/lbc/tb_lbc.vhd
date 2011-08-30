@@ -18,6 +18,27 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This test verifies the pipelined encoder by presenting a new test vector
+-- with an alternating polarity at each clock cycle.
+--
+-- The encoder should count the number of leading bits of the input that have a
+-- value opposite to the polarity of the previous vector, until it reaches the
+-- first bit with a different value. It should ignore the subsequent bits. The
+-- polarity of a vector is the value of its most significant bit (and it
+-- defines whether a leading or a falling edge is being detected by the TDC
+-- core).
+--
+-- To validate this behaviour, the test bench generates multiple vectors of
+-- 2^g_N-1 bits each, built by concatenating i bits of the current polarity,
+-- one bit with the opposite polarity (except for the last vector), and
+-- 2^g_N-i-2 random bits, for all 1 <= i < 2^g_N. The polarity alternates at
+-- each cycle, which means the encoder should always detect a new event.
+--
+-- The test bench verifies that the encoder produces the correct integer
+-- sequence 1, ..., 2^g_N-1 after its two cycles of latency, and that the
+-- polarity detection output is toggling.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

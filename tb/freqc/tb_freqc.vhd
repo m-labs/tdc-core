@@ -17,6 +17,14 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This test bench generates a system clock and a measured clock, measures the
+-- latter using the frequency counter module, and verifies the result.
+--
+-- It verifies that the counter has enough accuracy; i.e. that the measured
+-- clock cycle counter does not differ by more than one unit from the best
+-- possible value.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

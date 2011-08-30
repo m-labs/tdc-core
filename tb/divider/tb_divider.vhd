@@ -17,6 +17,11 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This test validates the integer divider by making it compute the quotient
+-- and remainder of all 0 ... 2^g_WIDTH positive integer values by all
+-- 1 ... 2^g_WIDTH values. It then checks for the correct results.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
