@@ -18,6 +18,12 @@
 
 -- Copyright (C) 2011 Sebastien Bourdeauducq
 
+-- DESCRIPTION:
+-- This contains component declarations for all the modules of the TDC core
+-- host interface.
+-- It is used both internally to instantiate modules, and by the user to
+-- instantiate the top-level "tdc_hostif" module.
+
 library ieee;
 use ieee.std_logic_1164.all;
 
