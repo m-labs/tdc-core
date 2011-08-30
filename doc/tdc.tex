@@ -12,6 +12,7 @@
 \usepackage{url}
 \usepackage{tweaklist}
 \renewcommand{\itemhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
+\renewcommand{\enumhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
 
 \title{Time to Digital Converter core for Spartan-6 FPGAs}
 \author{S\'ebastien Bourdeauducq}
@@ -162,6 +163,7 @@ Note that when $f < f_{0}$, some values can go above the maximum fractional part
 
 \section{Implementing the core}
 \subsection{Generics}
+\label{topgenerics}
 The top-level entity \verb!tdc! has the following generics:
 \begin{itemize}
 \item \verb!g_CHANNEL_COUNT! is the number of channels supported by the core. It can be arbitrarily large. However, because the control logic is shared, adding more channels increases the startup calibration time and the delay between two consecutive online calibrations of any given channel.
@@ -242,6 +244,64 @@ To be most effective, the ring oscillator must be placed close to the delay line
 
 \subsubsection{Reordering taps}
 To avoid negative delay differences (section \ref{delaystruct}), examine the timing report for the delay line and edit \verb!tdc_channel.vhd! to reorder the taps by increasing delays.
+
+\section{Simulation}
+\subsection{Overview}
+The TDC core comes with unit tests for several of its modules. Simulations are typically performed using the free GHDL tool, but the test benches should be compatible with other VHDL simulators. To run simulations with GHDL, use the \verb!simulate.sh! script in each test bench's folder.
+
+\subsection{Encoder test -- lbc}
+This test verifies the pipelined encoder by presenting a new test vector with an alternating polarity at each clock cycle.
+
+The encoder should count the number of leading bits of the input that have a value opposite to the polarity of the previous vector, until it reaches the first bit with a different value. It should ignore the subsequent bits. The polarity of a vector is the value of its most significant bit (and it defines whether a leading or a falling edge is being detected by the TDC core).
+
+To validate this behaviour, the test bench generates multiple vectors of $2^{\verb!g_N!}-1$ bits each, built by concatenating $i$ bits of the current polarity, one bit with the opposite polarity (except for the last vector), and $2^{\verb!g_N!}-i-2$ random bits, for all $1 \le i < 2^{\verb!g_N!}$. The polarity alternates at each cycle, which means the encoder should always detect a new event.
+
+The test bench verifies that the encoder produces the correct integer sequence $1, ..., 2^{\verb!g_N!}-1$ after its two cycles of latency, and that the polarity detection output is toggling.
+
+The test bench is self-checking and will produce a failed assertion in case of an unexpected value.
+
+The value \verb!g_N! is configurable with a generic.
+
+\subsection{Frequency counter test -- freqc}
+This test bench generates a system clock and a measured clock, measures the latter using the frequency counter module, and verifies the result.
+
+It is self-checking and will produce a failed assertion in case the counter has too much inaccuracy; that is, if the measured clock cycle counter differs by more than one unit from the best possible value.
+
+The generics of the test bench are:
+\begin{itemize}
+\item \verb!g_COUNTER_WIDTH!: see \verb!g_FCOUNTER_WIDTH! in subsection \ref{topgenerics}.
+\item \verb!g_TIMER_WIDTH!: see \verb!g_FTIMER_WIDTH! in subsection \ref{topgenerics}.
+\item \verb!g_CLK_PERIOD!: period (in nanoseconds) of the simulated system clock.
+\item \verb!g_CLK_M_PERIOD!: period (in nanoseconds) of the simulated measured clock.
+\end{itemize}
+
+\subsection{Integer divider test -- divider}
+This test validates the integer divider by making it compute the quotient and remainder of all $0 ... 2^{\verb!g_WIDTH!}$ positive integer values by all $1 ... 2^{\verb!g_WIDTH!}$ values.
+
+The test bench is self-checking and will produce a failed assertion in case the divider yields an incorrect quotient or remainder value.
+
+The value \verb!g_WIDTH! is configurable with a generic.
+
+\subsection{Controller test -- controller}
+This test verifies the correct operation of the controller in the following scenario:
+\begin{enumerate}
+\item The test bench resets the controller, which begins to perform startup calibration operations.
+\item The test bench sends a series of pulses with incrementing fine time stamps into the controller.
+\item The test bench provides a model of the histogram memory to the controller. Because of the continuously incrementing time stamps provided by the test bench, the controller books a histogram with the same $2^{\verb!g_FP_COUNT!-\verb!g_RAW_COUNT!}$ value everywhere.
+\item The controller reads the frequency of the calibration ring oscillator, and the test bench returns 1.
+\item The controller performs a first round of online calibration. It reads again the frequency of the ring oscillator, and the test bench returns 2. This means that all delays should be halved.
+\item The controller builds the LUT. The test bench provides a model of the memory for this purpose.
+\item The controller asserts the ready signal, and this terminates the simulation.
+\end{enumerate}
+
+The test bench then verifies that the LUT entries from $i = 1$ to $i = 2^{\verb!g_RAW_COUNT!}-1$ all have the correct value, and reports a failed assertion otherwise:
+\begin{equation}
+\textrm{LUT}(i) = \frac{1}{2}\cdot(i-1)\cdot2^{\verb!g_FP_COUNT!-\verb!g_RAW_COUNT!}
+\end{equation}
+
+The test bench has the generics \verb!g_RAW_COUNT!, \verb!g_FP_COUNT! and \verb!g_FCOUNTER_WIDTH!, which have the same meaning as in subsection \ref{topgenerics}.
+
+The controller depends on the divider module.
 
 \section{Host interface module}
 The optional host interface module connects the TDC core to a Wishbone bus. It is a separate top-level entity named \verb!tdc_hostif! that instantiates \verb!tdc!. It implements a Wishbone slave interface, which is automatically generated with \verb!wbgen2!.
