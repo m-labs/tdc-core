@@ -1,0 +1,3 @@
+# ==== Clock input ====
+NET "clkin" TNM_NET = CLK_125MHZ;
+TIMESPEC TS_CLK_125MHZ = PERIOD CLK_125MHZ 8 ns;
