@@ -97,29 +97,35 @@ wire		cpuibus_ack,
 //------------------------------------------------------------------
 wire [31:0]	brg_adr,
 		bram_adr,
+		sram_adr,
 		csrbrg_adr;
 
 wire [2:0]	brg_cti,
-		bram_cti;
+		bram_cti,
+		sram_cti;
 
 wire [31:0]	bram_dat_r,
-		bram_dat_w,
+		sram_dat_r,
+		sram_dat_w,
 		csrbrg_dat_r,
 		csrbrg_dat_w;
 
-wire [3:0]	bram_sel;
+wire [3:0]	bram_sel,
+		sram_sel;
 
-wire		bram_we,
-		csrbrg_we,
+wire		csrbrg_we,
 		aceusb_we;
 
 wire		bram_cyc,
+		sram_cyc,
 		csrbrg_cyc;
 
 wire		bram_stb,
+		sram_stb,
 		csrbrg_stb;
 
 wire		bram_ack,
+		sram_ack,
 		csrbrg_ack;
 
 //---------------------------------------------------------------------------
@@ -129,7 +135,7 @@ conbus #(
 	.s_addr_w(3),
 	.s0_addr(3'b000),	// bram		0x00000000
 	.s1_addr(3'b001),	// free		0x20000000
-	.s2_addr(3'b010),	// free		0x40000000
+	.s2_addr(3'b010),	// sram		0x40000000
 	.s3_addr(3'b100),	// CSR bridge	0x80000000
 	.s4_addr(3'b101)	// free		0xa0000000
 ) conbus (
@@ -189,11 +195,11 @@ conbus #(
 
 	// Slave 0
 	.s0_dat_i(bram_dat_r),
-	.s0_dat_o(bram_dat_w),
+	.s0_dat_o(),
 	.s0_adr_o(bram_adr),
 	.s0_cti_o(bram_cti),
 	.s0_sel_o(bram_sel),
-	.s0_we_o(bram_we),
+	.s0_we_o(),
 	.s0_cyc_o(bram_cyc),
 	.s0_stb_o(bram_stb),
 	.s0_ack_i(bram_ack),
@@ -204,15 +210,15 @@ conbus #(
 	.s1_stb_o(),
 	.s1_ack_i(1'b0),
 	// Slave 2
-	.s2_dat_i(32'bx),
-	.s2_dat_o(),
-	.s2_adr_o(),
-	.s2_cti_o(),
-	.s2_sel_o(),
-	.s2_we_o(),
-	.s2_cyc_o(),
-	.s2_stb_o(),
-	.s2_ack_i(1'b0),
+	.s2_dat_i(sram_dat_r),
+	.s2_dat_o(sram_dat_w),
+	.s2_adr_o(sram_adr),
+	.s2_cti_o(sram_cti),
+	.s2_sel_o(sram_sel),
+	.s2_we_o(sram_we),
+	.s2_cyc_o(sram_cyc),
+	.s2_stb_o(sram_stb),
+	.s2_ack_i(sram_ack),
 	// Slave 3
 	.s3_dat_i(csrbrg_dat_r),
 	.s3_dat_o(csrbrg_dat_w),
@@ -321,9 +327,8 @@ lm32_top cpu(
 );
 
 //---------------------------------------------------------------------------
-// BRAM
+// BRAM/SRAM
 //---------------------------------------------------------------------------
-
 bram #(
 	.adr_width(14)
 ) bram (
@@ -332,12 +337,28 @@ bram #(
 
 	.wb_adr_i(bram_adr),
 	.wb_dat_o(bram_dat_r),
-	.wb_dat_i(bram_dat_w),
+	.wb_dat_i(),
 	.wb_sel_i(bram_sel),
 	.wb_stb_i(bram_stb),
 	.wb_cyc_i(bram_cyc),
 	.wb_ack_o(bram_ack),
-	.wb_we_i(bram_we)
+	.wb_we_i(1'b0)
+);
+
+bram #(
+	.adr_width(14)
+) sram (
+	.sys_clk(sys_clk),
+	.sys_rst(sys_rst),
+
+	.wb_adr_i(sram_adr),
+	.wb_dat_o(sram_dat_r),
+	.wb_dat_i(sram_dat_w),
+	.wb_sel_i(sram_sel),
+	.wb_stb_i(sram_stb),
+	.wb_cyc_i(sram_cyc),
+	.wb_ack_o(sram_ack),
+	.wb_we_i(sram_we)
 );
 
 //---------------------------------------------------------------------------
