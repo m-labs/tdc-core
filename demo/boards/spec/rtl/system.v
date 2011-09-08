@@ -362,7 +362,11 @@ lm32_top cpu(
 // BRAM/SRAM
 //---------------------------------------------------------------------------
 bram #(
-	.adr_width(14)
+	.adr_width(14),
+	.init0("../../../software/bios/bios.h1"),
+	.init1("../../../software/bios/bios.h2"),
+	.init2("../../../software/bios/bios.h3"),
+	.init3("../../../software/bios/bios.h4")
 ) bram (
 	.sys_clk(sys_clk),
 	.sys_rst(sys_rst),

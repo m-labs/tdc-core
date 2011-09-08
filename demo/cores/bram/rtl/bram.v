@@ -1,6 +1,7 @@
 /*
  * Milkymist SoC
  * Copyright (C) 2007, 2008, 2009 Sebastien Bourdeauducq
+ * Copyright (C) 2011 CERN
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +17,11 @@
  */
 
 module bram #(
-	parameter adr_width = 11 // in bytes
+	parameter adr_width = 11, // in bytes
+	parameter init0 = "",
+	parameter init1 = "",
+	parameter init2 = "",
+	parameter init3 = ""
 ) (
 	input sys_clk,
 	input sys_rst,
@@ -45,6 +50,18 @@ reg [7:0] ram0 [0:word_depth-1];
 reg [7:0] ram1 [0:word_depth-1];
 reg [7:0] ram2 [0:word_depth-1];
 reg [7:0] ram3 [0:word_depth-1];
+
+initial begin
+	if(init0 != "")
+		$readmemh(init0, ram0);
+	if(init1 != "")
+		$readmemh(init1, ram1);
+	if(init2 != "")
+		$readmemh(init2, ram2);
+	if(init3 != "")
+		$readmemh(init3, ram3);
+end
+
 wire [word_width-1:0] adr;
 
 wire [7:0] ram0di;
