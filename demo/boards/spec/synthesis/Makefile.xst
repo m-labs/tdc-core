@@ -1,18 +1,25 @@
 BOARD_DIR=../rtl
 CORES_DIR=../../../cores
+GENCORES_DIR=../../../../../general-cores
+WBGEN_DIR=../../../../../wishbone-gen
+TDC_DIR=../../../..
 
 include ../sources.mak
 SRC=$(BOARD_SRC) $(CORES_SRC)
+SRC_VHDL=$(CORES_SRC_VHDL)
 
 all: build/system.bit
 
 build/system.ucf: common.ucf xst.ucf
 	cat common.ucf xst.ucf > build/system.ucf
 
-build/system.prj: $(SRC)
+build/system.prj: $(SRC) $(SRC_VHDL)
 	rm -f build/system.prj
-	for i in `echo $^`; do \
-	    echo "verilog work ../$$i" >> build/system.prj; \
+	for i in `echo $(SRC)`; do \
+		echo "verilog work ../$$i" >> build/system.prj; \
+	done
+	for i in `echo $(SRC_VHDL)`; do \
+		echo "vhdl work ../$$i" >> build/system.prj; \
 	done
 
 build/system.ngc: build/system.prj

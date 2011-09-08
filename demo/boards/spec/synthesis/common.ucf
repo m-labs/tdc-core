@@ -1,3 +1,9 @@
 # ==== Clock input ====
 NET "clkin" TNM_NET = CLK_125MHZ;
 TIMESPEC TS_CLK_125MHZ = PERIOD CLK_125MHZ 8 ns;
+
+NET "tdc/cmp_tdc/cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_channels[1].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_channels[2].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_channels[3].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_channels[4].cmp_channel/muxed_signal" TIG;

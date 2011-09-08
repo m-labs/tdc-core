@@ -23,5 +23,6 @@
 #define IRQ_TIMER1		(0x00000004)
 #define IRQ_UARTRX		(0x00000008)
 #define IRQ_UARTTX		(0x00000010)
+#define IRQ_TDC			(0x00000020)
 
 #endif /* __INTERRUPTS_H */
