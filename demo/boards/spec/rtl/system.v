@@ -31,8 +31,8 @@ module system(
 	output [1:0] led,
 	
 	// TDC
-	input [4:0] tdc_signal,
-	input [4:0] tdc_calib
+	input [1:0] tdc_signal,
+	input [1:0] tdc_calib
 );
 
 //------------------------------------------------------------------
@@ -451,7 +451,7 @@ sysctl #(
 // TDC
 //---------------------------------------------------------------------------
 tdc_hostif #(
-	.g_CHANNEL_COUNT(5),
+	.g_CHANNEL_COUNT(2),
 	.g_CARRY4_COUNT(100),
 	.g_RAW_COUNT(9),
 	.g_FP_COUNT(13),
