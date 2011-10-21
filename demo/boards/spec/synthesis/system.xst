@@ -5,4 +5,4 @@ run
 -opt_mode SPEED
 -opt_level 2
 -ofn system.ngc
--p xc6slx45t-fgg484-2
+-p xc6slx45t-fgg484-3

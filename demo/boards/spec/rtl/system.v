@@ -19,16 +19,17 @@
 `include "setup.v"
 
 module system(
-	input clkin,
-	input resetin,
+	input clkin_p,
+	input clkin_n,
+	input resetin_n,
 	
 	// UART
 	input uart_rxd,
 	output uart_txd,
 
 	// GPIO
-	input [2:0] btn,
-	output [1:0] led,
+	input btn,
+	output [3:0] led,
 	
 	// TDC
 	input [1:0] tdc_signal,
@@ -39,9 +40,14 @@ module system(
 // Clock and Reset Generation
 //------------------------------------------------------------------
 wire sys_clk;
+wire resetin = ~resetin_n;
 wire hard_reset;
 
-assign sys_clk = clkin;
+IBUFGDS clkbuf(
+	.I(clkin_p),
+	.IB(clkin_n),
+	.O(sys_clk)
+);
 
 `ifndef SIMULATION
 /* Synchronize the reset input */
@@ -425,8 +431,8 @@ uart #(
 //---------------------------------------------------------------------------
 sysctl #(
 	.csr_addr(4'h1),
-	.ninputs(3),
-	.noutputs(2),
+	.ninputs(1),
+	.noutputs(4),
 	.systemid(32'h53504543) /* SPEC */
 ) sysctl (
 	.sys_clk(sys_clk),

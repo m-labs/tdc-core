@@ -1,6 +1,34 @@
 # ==== Clock input ====
-NET "clkin" TNM_NET = CLK_125MHZ;
+NET "sys_clk" TNM_NET = CLK_125MHZ;
 TIMESPEC TS_CLK_125MHZ = PERIOD CLK_125MHZ 8 ns;
 
+# FPGA_CLK from CDCM61004, 125MHz
+NET "clkin_p" LOC = G9 | IOSTANDARD = "LVDS_25";
+NET "clkin_n" LOC = F10 | IOSTANDARD = "LVDS_25";
+
+# AUX button 0
+NET "resetin_n" LOC = C22 | IOSTANDARD = "LVCMOS18";
+
+# ==== UART ====
+NET "uart_rxd" LOC = A2 | IOSTANDARD = "LVCMOS25"; # FPGA input
+NET "uart_txd" LOC = B2 | IOSTANDARD = "LVCMOS25"; # FPGA output
+
+# ==== GPIO ====
+NET "btn" LOC = D21 | IOSTANDARD = "LVCMOS18"; # AUX button 1
+NET "led[0]" LOC = G19 | IOSTANDARD = "LVCMOS18"; # AUX LEDs
+NET "led[1]" LOC = F20 | IOSTANDARD = "LVCMOS18";
+NET "led[2]" LOC = F18 | IOSTANDARD = "LVCMOS18";
+NET "led[3]" LOC = C20 | IOSTANDARD = "LVCMOS18";
+
+# TODO: temperature probe
+
+# ==== TDC inputs ====
+# FIXME
+NET "tdc_signal[0]" LOC = AB11 | IOSTANDARD = LVCMOS25 | PULLDOWN;
+NET "tdc_signal[1]" LOC = Y11 | IOSTANDARD = LVCMOS25 | PULLDOWN;
+NET "tdc_calib[0]" LOC = AB12 | IOSTANDARD = LVCMOS25 | PULLDOWN;
+NET "tdc_calib[1]" LOC = AA12 | IOSTANDARD = LVCMOS25 | PULLDOWN;
+
+# ==== TDC core ====
 NET "tdc/cmp_tdc/cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
 NET "tdc/cmp_tdc/cmp_channelbank/g_channels[1].cmp_channel/muxed_signal" TIG;
