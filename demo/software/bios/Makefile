@@ -4,19 +4,19 @@ include $(MMDIR)/software/include.mak
 OBJECTS=crt0.o main.o boot.o
 SEGMENTS=-j .text -j .data -j .rodata
 
-all: bios.bin bios.h1 bios.h2 bios.h3 bios.h4
+all: bios.bin bios.h0 bios.h1 bios.h2 bios.h3
+
+bios.h0: bios.bin
+	$(MMDIR)/tools/bin2hex $< $@ 4096 4
 
 bios.h1: bios.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 1
+	$(MMDIR)/tools/bin2hex $< $@ 4096 3
 
 bios.h2: bios.bin
 	$(MMDIR)/tools/bin2hex $< $@ 4096 2
 
 bios.h3: bios.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 3
-
-bios.h4: bios.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 4
+	$(MMDIR)/tools/bin2hex $< $@ 4096 1
 
 %.bin: %.elf
 	$(OBJCOPY) $(SEGMENTS) -O binary $< $@
@@ -33,7 +33,7 @@ depend:
 	makedepend -Y -- $(CFLAGS) -- *.c
 
 clean:
-	rm -f *.o bios.elf bios.bin bios.h1 bios.h2 bios.h3 bios.h4 .*~ *~ Makefile.bak
+	rm -f *.o bios.elf bios.bin bios.h0 bios.h1 bios.h2 bios.h3 .*~ *~ Makefile.bak
 
 # DO NOT DELETE
 
