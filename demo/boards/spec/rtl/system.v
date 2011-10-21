@@ -469,7 +469,7 @@ tdc_hostif #(
 	.rst_n_i(~sys_rst),
 	.wb_clk_i(sys_clk),
 
-	.wb_addr_i(tdc_adr[5:0]),
+	.wb_addr_i(tdc_adr[7:2]),
 	.wb_data_i(tdc_dat_w),
 	.wb_data_o(tdc_dat_r),
 	.wb_cyc_i(tdc_cyc),
