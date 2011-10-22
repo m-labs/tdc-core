@@ -215,7 +215,11 @@ begin
     begin
         if rising_edge(clk_i) then
             if reset_i = '1' then
-                state <= SC_NEWCHANNEL;
+                if freeze_req_i = '1' then
+                    state <= FREEZE;
+                else
+                    state <= SC_NEWCHANNEL;
+                end if;
             else
                 case state is
                     when SC_NEWCHANNEL =>
