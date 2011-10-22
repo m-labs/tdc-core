@@ -462,7 +462,7 @@ tdc_hostif #(
 	.g_RAW_COUNT(9),
 	.g_FP_COUNT(13),
 	.g_COARSE_COUNT(25),
-	.g_RO_LENGTH(20),
+	.g_RO_LENGTH(31),
 	.g_FCOUNTER_WIDTH(13),
 	.g_FTIMER_WIDTH(10)
 ) tdc (

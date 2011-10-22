@@ -66,7 +66,7 @@ begin
         );
     cmp_ringosc: tdc_ringosc
         generic map(
-            g_LENGTH => 401
+            g_LENGTH => 31
         )
         port map(
             en_i  => en,

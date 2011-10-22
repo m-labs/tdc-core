@@ -45,7 +45,7 @@ entity tdc_hostif is
         g_RAW_COUNT      : positive := 9;
         g_FP_COUNT       : positive := 13;
         g_COARSE_COUNT   : positive := 25;
-        g_RO_LENGTH      : positive := 20;
+        g_RO_LENGTH      : positive := 31;
         g_FCOUNTER_WIDTH : positive := 13;
         g_FTIMER_WIDTH   : positive := 10
     );

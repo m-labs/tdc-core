@@ -49,7 +49,7 @@ entity tdc is
         -- Number of coarse counter bits.
         g_COARSE_COUNT   : positive := 25;
         -- Length of each ring oscillator.
-        g_RO_LENGTH      : positive := 20;
+        g_RO_LENGTH      : positive := 31;
         -- Frequency counter width.
         g_FCOUNTER_WIDTH : positive := 13;
         -- Frequency counter timer width.
