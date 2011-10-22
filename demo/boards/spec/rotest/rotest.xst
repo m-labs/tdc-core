@@ -1,0 +1,8 @@
+run
+-ifn rotest.prj
+-top rotest
+-ifmt MIXED
+-opt_mode SPEED
+-opt_level 2
+-ofn rotest.ngc
+-p xc6slx45t-fgg484-3
