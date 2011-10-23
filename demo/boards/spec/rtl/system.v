@@ -369,10 +369,10 @@ lm32_top cpu(
 //---------------------------------------------------------------------------
 bram #(
 	.adr_width(14),
-	.init0("../../../software/bios/bios.h0"),
-	.init1("../../../software/bios/bios.h1"),
-	.init2("../../../software/bios/bios.h2"),
-	.init3("../../../software/bios/bios.h3")
+	.init0("../../../software/demo/demo.h0"),
+	.init1("../../../software/demo/demo.h1"),
+	.init2("../../../software/demo/demo.h2"),
+	.init3("../../../software/demo/demo.h3")
 ) bram (
 	.sys_clk(sys_clk),
 	.sys_rst(sys_rst),

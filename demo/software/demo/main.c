@@ -21,15 +21,9 @@
 #include <uart.h>
 #include <crc.h>
 #include <system.h>
-#include <board.h>
-#include <version.h>
 #include <hw/sysctl.h>
 #include <hw/gpio.h>
 #include <hw/uart.h>
-
-#include "boot.h"
-
-const struct board_desc *brd_desc;
 
 /* General address space functions */
 
@@ -193,18 +187,6 @@ static void crc(char *startaddr, char *len)
 
 /* Init + command line */
 
-static void help()
-{
-	puts("This is the Milkymist BIOS debug shell.");
-	puts("Available commands:");
-	puts("mr         - read address space");
-	puts("mw         - write address space");
-	puts("mc         - copy address space");
-	puts("crc        - compute CRC32 of a part of the address space");
-	puts("serialboot - attempt SFL boot");
-	puts("reboot     - system reset");
-}
-
 static char *get_token(char **str)
 {
 	char *c, *d;
@@ -232,37 +214,15 @@ static void do_command(char *c)
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
 	
-	else if(strcmp(token, "serialboot") == 0) serialboot();
-
 	else if(strcmp(token, "reboot") == 0) reboot();
-	
-	else if(strcmp(token, "help") == 0) help();
 	
 	else if(strcmp(token, "") != 0)
 		printf("Command not found\n");
 }
 
-static int test_user_abort()
-{
-	unsigned int i;
-	char c;
-	
-	puts("I: Press Q to abort boot");
-	for(i=0;i<4000000;i++) {
-		if(readchar_nonblock()) {
-			c = readchar();
-			if(c == 'Q') {
-				puts("I: Aborted boot on user request");
-				return 0;
-			}
-		}
-	}
-	return 1;
-}
-
 extern unsigned int _edata;
 
-static void crcbios()
+static void crcsw()
 {
 	unsigned int length;
 	unsigned int expected_crc;
@@ -278,53 +238,27 @@ static void crcbios()
 	length = (unsigned int)&_edata;
 	actual_crc = crc32((unsigned char *)0, length);
 	if(expected_crc == actual_crc)
-		printf("I: BIOS CRC passed (%08x)\n", actual_crc);
+		printf("I: SW CRC passed (%08x)\n", actual_crc);
 	else {
-		printf("W: BIOS CRC failed (expected %08x, got %08x)\n", expected_crc, actual_crc);
+		printf("W: SW CRC failed (expected %08x, got %08x)\n", expected_crc, actual_crc);
 		printf("W: The system will continue, but expect problems.\n");
 	}
 }
 
-static void display_board()
-{
-	if(brd_desc == NULL) {
-		printf("E: Running on unknown board (ID=0x%08x), startup aborted.\n", CSR_SYSTEM_ID);
-		while(1);
-	}
-	printf("I: Running on %s\n", brd_desc->name);
-}
-
 static const char banner[] =
-	"\nMILKYMIST(tm) v"VERSION" BIOS\thttp://www.milkymist.org\n"
-	"(c) 2007, 2008, 2009, 2011 Sebastien Bourdeauducq\n\n"
-	"This program is free software: you can redistribute it and/or modify\n"
-	"it under the terms of the GNU General Public License as published by\n"
-	"the Free Software Foundation, version 3 of the License.\n\n";
-
-static void boot_sequence()
-{
-	if(test_user_abort()) {
-		serialboot(1);
-		printf("E: No boot medium found\n");
-	}
-}
+	"\nTime to Digital Converter demo\n\n";
 
 int main(int i, char **c)
 {
 	char buffer[64];
 
-	brd_desc = get_board_desc();
-
 	/* Display a banner as soon as possible to show that the system is alive */
 	putsnonl(banner);
 
-	crcbios();
-	display_board();
-
-	boot_sequence();
+	crcsw();
 
 	while(1) {
-		putsnonl("\e[1mBIOS>\e[0m ");
+		putsnonl("\e[1mTDC>\e[0m ");
 		readstr(buffer, 64);
 		do_command(buffer);
 	}
