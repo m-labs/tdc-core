@@ -26,8 +26,6 @@ NET "led[3]" LOC = C20 | IOSTANDARD = "LVCMOS18";
 # FIXME
 NET "tdc_signal[0]" LOC = AB11 | IOSTANDARD = LVCMOS25 | PULLDOWN;
 NET "tdc_signal[1]" LOC = Y11 | IOSTANDARD = LVCMOS25 | PULLDOWN;
-NET "tdc_calib[0]" LOC = AB12 | IOSTANDARD = LVCMOS25 | PULLDOWN;
-NET "tdc_calib[1]" LOC = AA12 | IOSTANDARD = LVCMOS25 | PULLDOWN;
 
 # ==== TDC core ====
 NET "tdc/cmp_tdc/cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
