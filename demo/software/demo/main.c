@@ -1,6 +1,7 @@
 /*
  * Milkymist SoC (Software)
  * Copyright (C) 2007, 2008, 2009, 2010 Sebastien Bourdeauducq
+ * Copyright (C) 2011 CERN
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +25,8 @@
 #include <hw/sysctl.h>
 #include <hw/gpio.h>
 #include <hw/uart.h>
+
+#include "tdc.h"
 
 /* General address space functions */
 
@@ -213,8 +216,10 @@ static void do_command(char *c)
 	else if(strcmp(token, "mw") == 0) mw(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
-	
 	else if(strcmp(token, "reboot") == 0) reboot();
+	
+	/* payload */
+	else if(strcmp(token, "rofreq") == 0) rofreq();
 	
 	else if(strcmp(token, "") != 0)
 		printf("Command not found\n");
