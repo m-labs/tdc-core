@@ -155,7 +155,7 @@ begin
     ha_last <= '1' when (ha_count = (ha_count'range => '1')) else '0';
     his_a_o <= ha_count when (ha_sel = '1') else c_raw_i;
     his_d_o <= (his_d_o'range => '0') when (ha_sel = '1')
-        else std_logic_vector(unsigned(his_d_i) + 1);
+        else "0000000001100";  --std_logic_vector(unsigned(his_d_i) + 1);
     
     -- accumulator
     process(clk_i)

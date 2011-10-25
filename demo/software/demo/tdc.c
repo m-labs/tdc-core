@@ -48,6 +48,9 @@ void rofreq()
         } while(!last);
         printf("\n");
     }
+    
+    tdc->DCTL = 0;
+    tdc->CS = TDC_CS_RST;
 }
 
 #define TDC_RAW_COUNT 9
