@@ -145,8 +145,7 @@ begin
     detect_o <= detect;
     raw_o <= raw;
     c_detect_o <= detect;
-    --c_raw_o <= raw;
-    c_raw_o <= "000000010";
+    c_raw_o <= raw;
     
     -- Histogram memory.
     cmp_histogram: generic_spram
