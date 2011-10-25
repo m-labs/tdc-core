@@ -20,5 +20,6 @@
 #define __TDC_H
 
 void rofreq();
+void calinfo();
 
 #endif /* __TDC_H */

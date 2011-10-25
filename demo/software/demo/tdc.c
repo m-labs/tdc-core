@@ -41,11 +41,52 @@ void rofreq()
             tdc->FCC = TDC_FCC_ST;
             while(!(tdc->FCC & TDC_FCC_RDY));
             val = tdc->FCR;
-            printf("Channel %d: %d\n", channel, val);
+            printf("CHANNEL %d: %d\n", channel, val);
             channel++;
             last = tdc->CSEL & TDC_CSEL_LAST;
             tdc->CSEL = TDC_CSEL_NEXT;
         } while(!last);
         printf("\n");
     }
+}
+
+#define TDC_RAW_COUNT 9
+
+void calinfo()
+{
+    int channel;
+    int i;
+    
+    if(!(tdc->CS & TDC_CS_RDY)) {
+        printf("Startup calibration not done\n");
+        return;
+    }
+    tdc->DCTL = TDC_DCTL_REQ;
+    while(!(tdc->DCTL & TDC_DCTL_ACK));
+    
+    /* go to first channel */
+    while(!(tdc->CSEL & TDC_CSEL_LAST))
+        tdc->CSEL = TDC_CSEL_NEXT;
+    tdc->CSEL = TDC_CSEL_NEXT;
+    
+    channel = 0;
+    do {
+        printf("CHANNEL %d\n", channel);
+        printf("HIST: ");
+        for(i=0;i<(1 << TDC_RAW_COUNT);i++) {
+            tdc->HISA = i;
+            printf("%d,", tdc->HISD);
+        }
+        printf("\n");
+        printf("LUT: ");
+        for(i=0;i<(1 << TDC_RAW_COUNT);i++) {
+            tdc->LUTA = i;
+            printf("%d,", tdc->LUTD);
+        }
+        printf("\n\n");
+        channel++;
+        tdc->CSEL = TDC_CSEL_NEXT;
+    } while(!(tdc->CSEL & TDC_CSEL_LAST));
+    
+    tdc->DCTL = 0;
 }
