@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-25 SB Added single/multi channel bank components
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
 
@@ -119,6 +120,107 @@ component tdc_controller is
 end component;
 
 component tdc_channelbank is
+    generic(
+        g_CHANNEL_COUNT  : positive;
+        g_CARRY4_COUNT   : positive;
+        g_RAW_COUNT      : positive;
+        g_FP_COUNT       : positive;
+        g_COARSE_COUNT   : positive;
+        g_RO_LENGTH      : positive;
+        g_FCOUNTER_WIDTH : positive;
+        g_FTIMER_WIDTH   : positive
+    );
+    port(
+        clk_i       : in std_logic;
+        reset_i     : in std_logic;
+         
+        cc_rst_i    : in std_logic;
+        cc_cy_o     : out std_logic;
+        next_i      : in std_logic;
+        last_o      : out std_logic;
+        calib_sel_i : in std_logic;
+        
+        deskew_i    : in std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+         
+        signal_i    : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        calib_i     : in std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+         
+        detect_o    : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        polarity_o  : out std_logic_vector(g_CHANNEL_COUNT-1 downto 0);
+        raw_o       : out std_logic_vector(g_CHANNEL_COUNT*g_RAW_COUNT-1 downto 0);
+        fp_o        : out std_logic_vector(g_CHANNEL_COUNT*(g_COARSE_COUNT+g_FP_COUNT)-1 downto 0);
+         
+        lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_we_i    : in std_logic;
+        lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        
+        c_detect_o  : out std_logic;
+        c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_we_i    : in std_logic;
+        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+
+        oc_start_i  : in std_logic;
+        oc_ready_o  : out std_logic;
+        oc_freq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_store_i  : in std_logic;
+        oc_sfreq_o  : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
+    );
+end component;
+
+component tdc_channelbank_single is
+    generic(
+        g_CARRY4_COUNT   : positive;
+        g_RAW_COUNT      : positive;
+        g_FP_COUNT       : positive;
+        g_COARSE_COUNT   : positive;
+        g_RO_LENGTH      : positive;
+        g_FCOUNTER_WIDTH : positive;
+        g_FTIMER_WIDTH   : positive
+    );
+    port(
+        clk_i       : in std_logic;
+        reset_i     : in std_logic;
+         
+        cc_rst_i    : in std_logic;
+        cc_cy_o     : out std_logic;
+        next_i      : in std_logic;
+        last_o      : out std_logic;
+        calib_sel_i : in std_logic;
+        
+        deskew_i    : in std_logic_vector(g_COARSE_COUNT+g_FP_COUNT-1 downto 0);
+        
+        signal_i    : in std_logic;
+        calib_i     : in std_logic;
+        
+        detect_o    : out std_logic;
+        polarity_o  : out std_logic;
+        raw_o       : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+        fp_o        : out std_logic_vector(g_COARSE_COUNT+g_FP_COUNT-1 downto 0);
+         
+        lut_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        lut_we_i    : in std_logic;
+        lut_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        lut_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        
+        c_detect_o  : out std_logic;
+        c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
+        his_we_i    : in std_logic;
+        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+
+        oc_start_i  : in std_logic;
+        oc_ready_o  : out std_logic;
+        oc_freq_o   : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
+        oc_store_i  : in std_logic;
+        oc_sfreq_o  : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0)
+    );
+end component;
+
+component tdc_channelbank_multi is
     generic(
         g_CHANNEL_COUNT  : positive;
         g_CARRY4_COUNT   : positive;

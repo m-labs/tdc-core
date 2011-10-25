@@ -32,7 +32,7 @@ module system(
 	output [3:0] led,
 	
 	// TDC
-	input [1:0] tdc_signal
+	input tdc_signal
 );
 
 //------------------------------------------------------------------
@@ -455,10 +455,10 @@ sysctl #(
 //---------------------------------------------------------------------------
 // TDC
 //---------------------------------------------------------------------------
-wire [1:0] tdc_calib;
+wire tdc_calib;
 
 tdc_hostif #(
-	.g_CHANNEL_COUNT(2),
+	.g_CHANNEL_COUNT(1),
 	.g_CARRY4_COUNT(100),
 	.g_RAW_COUNT(9),
 	.g_FP_COUNT(13),
@@ -499,6 +499,6 @@ reg [3:0] cal_clkdiv;
 always @(posedge cal_clk16x) cal_clkdiv <= cal_clkdiv + 4'd1;
 assign cal_clk = cal_clkdiv[3];
 
-assign tdc_calib = {2{cal_clk}};
+assign tdc_calib = cal_clk;
 
 endmodule
