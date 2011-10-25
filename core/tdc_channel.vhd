@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-25 SB Disable ring oscillator on reset
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
 
@@ -98,6 +99,7 @@ signal raw          : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal raw_d1       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal raw_d2       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal lut          : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal ro_en        : std_logic;
 begin
     -- register calibration select signal to avoid glitches
     process(clk_i)
@@ -166,9 +168,10 @@ begin
             g_LENGTH => g_RO_LENGTH
         )
         port map(
-            en_i  => ro_en_i,
+            en_i  => ro_en,
             clk_o => ro_clk_o
         );
+    ro_en <= ro_en_i and not reset_i;
 
     detect_d1 <= polarity_d1 xor polarity_d2;
     
