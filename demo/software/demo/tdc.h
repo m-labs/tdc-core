@@ -21,5 +21,6 @@
 
 void rofreq();
 void calinfo();
+void mraw();
 
 #endif /* __TDC_H */

@@ -93,3 +93,20 @@ void calinfo()
     
     tdc->DCTL = 0;
 }
+
+void mraw()
+{
+    if(!(tdc->CS & TDC_CS_RDY)) {
+        printf("Startup calibration not done\n");
+        return;
+    }
+    tdc->EIC_IER = TDC_EIC_IER_IE0;
+    
+    while(1) {
+        while(!(tdc->EIC_ISR & TDC_EIC_ISR_IE0)) {
+            if(readchar_nonblock()) return;
+        }
+        printf("%d[%d]\n", tdc->RAW0, tdc->POL & 0x01);
+        tdc->EIC_ISR = TDC_EIC_ISR_IE0;
+    }
+}
