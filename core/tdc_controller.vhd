@@ -337,25 +337,29 @@ begin
                 oc_start_o <= '1';
                 ha_reset <= '1';
                 acc_reset <= '1';
+                ha_sel <= '1';
             when OC_WAITM =>
-                null;
+                ha_sel <= '1';
             when OC_WAITMUL1 =>
-                null;
+                ha_sel <= '1';
             when OC_WAITMUL2 =>
-                null;
+                ha_sel <= '1';
             when OC_STARTDIV =>
                 div_start <= '1';
+                ha_sel <= '1';
             when OC_WAITDIV =>
-                null;
+                ha_sel <= '1';
             when OC_WRITELUT =>
                 lut_we_o <= '1';
                 acc_en <= '1';
                 ha_inc <= '1';
+                ha_sel <= '1';
             when OC_NEXTCHANNEL =>
                 next_o <= '1';
                 if last_i = '1' then
                     ready_p <= '1';
                 end if;
+                ha_sel <= '1';
             
             when FREEZE =>
                 freeze_ack_o <= '1';
