@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-27 SB Fix LUT address offset
 -- 2011-08-19 SB Created file
 -------------------------------------------------------------------------------
 
@@ -207,7 +208,7 @@ begin
     end process;
     
     -- generate LUT address and write data
-    lut_a_o <= std_logic_vector(unsigned(ha_count) + 1);
+    lut_a_o <= ha_count;
     lut_d_o <= div_qsat;
     
     -- main FSM
