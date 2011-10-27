@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-27 SB Fix pipeline balance
 -- 2011-08-01 SB Created file
 -------------------------------------------------------------------------------
 
@@ -93,14 +94,14 @@ end function;
 
 signal polarity    : std_logic;
 signal polarity_d1 : std_logic;
-signal polarity_d2 : std_logic;
-signal count_reg   : std_logic_vector(g_N-1 downto 0);
+signal count       : std_logic_vector(g_N-1 downto 0);
+signal count_d1    : std_logic_vector(g_N-1 downto 0);
 signal d_completed : std_logic_vector(2**g_N-2 downto 0);
 
 -- enable retiming
 attribute register_balancing: string;
-attribute register_balancing of count_reg: signal is "backward";
-attribute register_balancing of count_o: signal is "backward";
+attribute register_balancing of count: signal is "backward";
+attribute register_balancing of count_d1: signal is "backward";
 
 begin
     g_expand: if g_NIN < 2**g_N-1 generate
@@ -116,17 +117,16 @@ begin
             if reset_i = '1' then
                 polarity <= '1';
                 polarity_d1 <= '1';
-                polarity_d2 <= '1';
-                count_reg <= (others => '0');
-                count_o <= (others => '0');
+                count <= (others => '0');
+                count_d1 <= (others => '0');
             else
                 polarity <= not d_completed(2**g_N-2);
-                polarity_d1 <= polarity;
-                polarity_d2 <= polarity_d1;
-                count_reg <= f_cls(d_completed, polarity);
-                count_o <= count_reg;
+                polarity_d1 <= not polarity;
+                count <= f_cls(d_completed, polarity);
+                count_d1 <= count;
             end if;
         end if;
     end process;
-    polarity_o <= polarity_d2;
+    polarity_o <= polarity_d1;
+    count_o <= count_d1;
 end architecture;
