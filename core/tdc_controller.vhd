@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-27 SB Fix accumulator overflow
 -- 2011-10-27 SB Fix LUT address offset
 -- 2011-08-19 SB Created file
 -------------------------------------------------------------------------------
@@ -286,7 +287,7 @@ begin
         end if;
     end process;
     
-    process(state, hc_zero, oc_ready_i, last_i)
+    process(state, hc_zero, oc_ready_i, last_i, c_detect_i)
     begin
         ready_p <= '0';
         
@@ -321,10 +322,12 @@ begin
                 his_we_o <= '1';
             when SC_READ =>
                 calib_sel_o <= '1';
+                if c_detect_i = '1' then
+                    hc_dec <= '1';
+                end if;
             when SC_UPDATE =>
                 calib_sel_o <= '1';
                 his_we_o <= '1';
-                hc_dec <= '1';
                 if hc_zero = '1' then
                     oc_start_o <= '1';
                 end if;
