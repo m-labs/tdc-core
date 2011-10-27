@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-10-27 SB MSB first
 -- 2011-08-01 SB Created file
 -------------------------------------------------------------------------------
 
@@ -60,14 +61,25 @@ entity tdc_delayline is
 end entity;
 
 architecture rtl of tdc_delayline is
-signal unreg : std_logic_vector(4*g_WIDTH-1 downto 0);
-signal reg1  : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal unreg_rev : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal reg1_rev  : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal taps_rev  : std_logic_vector(4*g_WIDTH-1 downto 0);
+
+function f_bit_reverse(s: std_logic_vector) return std_logic_vector is
+variable v_r: std_logic_vector(s'high downto s'low);
+begin 
+    for i in s'high downto s'low loop
+        v_r(i) := s(s'high-i);
+    end loop; 
+    return v_r;
+end function;
+
 begin
     -- generate a carry chain
     g_carry4: for i in 0 to g_WIDTH-1 generate
         g_firstcarry4: if i = 0 generate
             cmp_CARRY4: CARRY4 port map(
-                CO => unreg(3 downto 0),
+                CO => unreg_rev(3 downto 0),
                 CI => '0',
                 CYINIT => signal_i,
                 DI => "0000",
@@ -76,8 +88,8 @@ begin
          end generate;
          g_nextcarry4: if i > 0 generate
             cmp_CARRY4: CARRY4 port map(
-                CO => unreg(4*(i+1)-1 downto 4*i),
-                CI => unreg(4*i-1),
+                CO => unreg_rev(4*(i+1)-1 downto 4*i),
+                CI => unreg_rev(4*i-1),
                 CYINIT => '0',
                 DI => "0000",
                 S => "1111"
@@ -94,8 +106,8 @@ begin
             port map(
                 C => clk_i,
                 R => reset_i,
-                D => unreg(j),
-                Q => reg1(j)
+                D => unreg_rev(j),
+                Q => reg1_rev(j)
             );
         cmp_FDR_2: FDR
             generic map(
@@ -104,8 +116,10 @@ begin
             port map(
                 C => clk_i,
                 R => reset_i,
-                D => reg1(j),
-                Q => taps_o(j)
+                D => reg1_rev(j),
+                Q => taps_rev(j)
             );
     end generate;
+    
+    taps_o <= f_bit_reverse(taps_rev);
 end architecture;
