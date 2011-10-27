@@ -465,7 +465,7 @@ tdc_hostif #(
 	.g_COARSE_COUNT(25),
 	.g_RO_LENGTH(31),
 	.g_FCOUNTER_WIDTH(13),
-	.g_FTIMER_WIDTH(10)
+	.g_FTIMER_WIDTH(14)
 ) tdc (
 	.rst_n_i(~sys_rst),
 	.wb_clk_i(sys_clk),
