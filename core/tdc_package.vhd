@@ -333,8 +333,8 @@ end component;
 
 component tdc_lbc is
     generic(
-        g_N : positive;
-        g_NIN: positive
+        g_N   : positive;
+        g_NIN : positive
     );
     port(
          clk_i        : in std_logic;
@@ -347,13 +347,23 @@ end component;
 
 component tdc_delayline is
     generic(
-        g_WIDTH : positive
+        g_WIDTH: positive
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
          signal_i     : in std_logic;
          taps_o       : out std_logic_vector(4*g_WIDTH-1 downto 0)
+    );
+end component;
+
+component tdc_ordertaps is
+    generic(
+        g_WIDTH: positive
+    );
+    port(
+        unsorted_i : in std_logic_vector(4*g_WIDTH-1 downto 0);
+        sorted_o   : out std_logic_vector(4*g_WIDTH-1 downto 0)
     );
 end component;
 

@@ -61,9 +61,10 @@ entity tdc_delayline is
 end entity;
 
 architecture rtl of tdc_delayline is
-signal unreg_rev : std_logic_vector(4*g_WIDTH-1 downto 0);
-signal reg1_rev  : std_logic_vector(4*g_WIDTH-1 downto 0);
-signal taps_rev  : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal unreg_rev       : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal reg1_rev        : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal taps_rev        : std_logic_vector(4*g_WIDTH-1 downto 0);
+signal taps_rev_sorted : std_logic_vector(4*g_WIDTH-1 downto 0);
 
 function f_bit_reverse(s: std_logic_vector) return std_logic_vector is
 variable v_r: std_logic_vector(s'high downto s'low);
@@ -121,5 +122,16 @@ begin
             );
     end generate;
     
-    taps_o <= f_bit_reverse(taps_rev);
+    -- sort taps by increasing delays, according to static timing model
+    cmp_ordertaps: tdc_ordertaps
+        generic map(
+            g_WIDTH => g_WIDTH
+        )
+        port map(
+            unsorted_i => taps_rev,
+            sorted_o   => taps_rev_sorted
+        );
+    
+    -- sort output with the least delay in the most significant bit
+    taps_o <= f_bit_reverse(taps_rev_sorted);
 end architecture;

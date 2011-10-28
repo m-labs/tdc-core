@@ -122,8 +122,6 @@ begin
              taps_o       => taps
         );
     
-    -- TODO: reorder bits by increasing delays
-    
     cmp_lbc: tdc_lbc
         generic map(
             g_N     => g_RAW_COUNT,
