@@ -20,12 +20,14 @@
 #define __HW_GPIO_H
 
 /* Inputs */
-#define GPIO_PB2	(0x00000001)
+#define GPIO_PB2		(0x00000001)
+#define GPIO_1W			(0x00000002)
 
 /* Outputs */
-#define GPIO_LD2	(0x00000001)
-#define GPIO_LD3	(0x00000002)
-#define GPIO_LD4	(0x00000004)
-#define GPIO_LD5	(0x00000008)
+#define GPIO_LD2		(0x00000001)
+#define GPIO_LD3		(0x00000002)
+#define GPIO_LD4		(0x00000004)
+#define GPIO_LD5		(0x00000008)
+#define GPIO_1W_DRIVELOW	(0x00000010)
 
 #endif /* __HW_GPIO_H */

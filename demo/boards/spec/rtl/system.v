@@ -30,6 +30,7 @@ module system(
 	// GPIO
 	input btn,
 	output [3:0] led,
+	inout onewire,
 	
 	// TDC
 	input tdc_signal
@@ -428,10 +429,11 @@ uart #(
 //---------------------------------------------------------------------------
 // System Controller
 //---------------------------------------------------------------------------
+wire onewire_drivelow;
 sysctl #(
 	.csr_addr(4'h1),
-	.ninputs(1),
-	.noutputs(4),
+	.ninputs(2),
+	.noutputs(5),
 	.systemid(32'h53504543) /* SPEC */
 ) sysctl (
 	.sys_clk(sys_clk),
@@ -446,11 +448,12 @@ sysctl #(
 	.csr_di(csr_dw),
 	.csr_do(csr_dr_sysctl),
 
-	.gpio_inputs(btn),
-	.gpio_outputs(led),
+	.gpio_inputs({onewire, btn}),
+	.gpio_outputs({onewire_drivelow, led}),
 
 	.hard_reset(hard_reset)
 );
+assign onewire = onewire_drivelow ? 1'b0 : 1'bz;
 
 //---------------------------------------------------------------------------
 // TDC

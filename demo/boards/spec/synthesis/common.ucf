@@ -19,8 +19,7 @@ NET "led[0]" LOC = G19 | IOSTANDARD = "LVCMOS18"; # AUX LEDs
 NET "led[1]" LOC = F20 | IOSTANDARD = "LVCMOS18";
 NET "led[2]" LOC = F18 | IOSTANDARD = "LVCMOS18";
 NET "led[3]" LOC = C20 | IOSTANDARD = "LVCMOS18";
-
-# TODO: temperature probe
+NET "onewire" LOC = D4 | IOSTANDARD = "LVCMOS25";
 
 # ==== TDC inputs ====
 # FIXME
