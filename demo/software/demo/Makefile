@@ -7,16 +7,16 @@ SEGMENTS=-j .text -j .data -j .rodata
 all: demo.bin demo.h0 demo.h1 demo.h2 demo.h3
 
 demo.h0: demo.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 4
+	$(MMDIR)/tools/bin2hex $< $@ 8192 4
 
 demo.h1: demo.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 3
+	$(MMDIR)/tools/bin2hex $< $@ 8192 3
 
 demo.h2: demo.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 2
+	$(MMDIR)/tools/bin2hex $< $@ 8192 2
 
 demo.h3: demo.bin
-	$(MMDIR)/tools/bin2hex $< $@ 4096 1
+	$(MMDIR)/tools/bin2hex $< $@ 8192 1
 
 %.bin: %.elf
 	$(OBJCOPY) $(SEGMENTS) -O binary $< $@

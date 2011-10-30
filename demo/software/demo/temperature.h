@@ -19,6 +19,7 @@
 #ifndef __TEMPERATURE_H
 #define __TEMPERATURE_H
 
+int gettemp();
 void temp();
 
 #endif /* __TEMPERATURE_H */

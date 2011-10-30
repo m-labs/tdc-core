@@ -368,7 +368,7 @@ lm32_top cpu(
 // BRAM/SRAM
 //---------------------------------------------------------------------------
 bram #(
-	.adr_width(14),
+	.adr_width(15),
 	.init0("../../../software/demo/demo.h0"),
 	.init1("../../../software/demo/demo.h1"),
 	.init2("../../../software/demo/demo.h2"),
