@@ -16,7 +16,7 @@
 
 \title{Time to Digital Converter core for Spartan-6 FPGAs}
 \author{S\'ebastien Bourdeauducq}
-\date{August 2011}
+\date{October 2011}
 \begin{document}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
@@ -231,10 +231,19 @@ Even when the optimization of instantiated primitives is disabled in the Xst opt
 \subsubsection{False timing paths}
 The calibration selection signal is driven synchronously by the controller, and the output of the multiplexer goes through the delay line before being recaptured synchronously by the input flip-flops. The automatic place and route tool incorrectly assumes this is a regular synchronous path. Since the delay line is always longer than a clock period, it aborts with a message saying that the components delays alone exceed the timing constraints. The problem is resolved by adding ``timing ignore'' (TIG) constraints into the UCF file, using a syntax based on the example below:
 \begin{verbatim}
-NET "cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
+NET "cmp_tdc/cmp_channelbank/g_single.cmp_channelbank
+/cmp_channel/muxed_signal" TIG;
 \end{verbatim}
 
-One such constraint must be added per channel, and the number ``0'' incremented accordingly.
+Or, for multiple channels:
+\begin{verbatim}
+NET "cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank
+/cmp_channel[0]/muxed_signal" TIG;
+NET "cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank
+/cmp_channel[1]/muxed_signal" TIG;
+\end{verbatim}
+
+One constraint must be added per channel, and the numbers ``0'', ``1'', ... incremented accordingly.
 
 \subsubsection{Delay line placement}
 The delay line must be placed in a way that minimizes the delay from the input signals IOBs. The reason is that this delay is affected by PVT variations that are not compensated for.
@@ -243,7 +252,9 @@ The delay line must be placed in a way that minimizes the delay from the input s
 To be most effective, the ring oscillator must be placed close to the delay line of the same channel.
 
 \subsubsection{Reordering taps}
-To avoid negative delay differences (section \ref{delaystruct}), examine the timing report for the delay line and edit \verb!tdc_channel.vhd! to reorder the taps by increasing delays.
+To avoid negative delay differences (section \ref{delaystruct}), examine the timing report for the delay line and edit \verb!tdc_ordertaps.vhd! to reorder the taps by increasing delays.
+
+The script \verb!ordertaps.py! can be used to automate this task. See the comments at the beginning of the script for details.
 
 \section{Simulation}
 \subsection{Overview}

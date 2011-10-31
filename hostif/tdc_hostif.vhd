@@ -40,14 +40,14 @@ use work.tdc_hostif_package.all;
 
 entity tdc_hostif is
     generic(
-        g_CHANNEL_COUNT  : positive := 2;
-        g_CARRY4_COUNT   : positive := 100;
+        g_CHANNEL_COUNT  : positive := 1;
+        g_CARRY4_COUNT   : positive := 124;
         g_RAW_COUNT      : positive := 9;
         g_FP_COUNT       : positive := 13;
         g_COARSE_COUNT   : positive := 25;
         g_RO_LENGTH      : positive := 31;
         g_FCOUNTER_WIDTH : positive := 13;
-        g_FTIMER_WIDTH   : positive := 10
+        g_FTIMER_WIDTH   : positive := 14
     );
     port(
         rst_n_i   : in std_logic;

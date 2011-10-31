@@ -39,9 +39,9 @@ use work.tdc_package.all;
 entity tdc is
     generic(
         -- Number of channels.
-        g_CHANNEL_COUNT  : positive := 2;
+        g_CHANNEL_COUNT  : positive := 1;
         -- Number of CARRY4 elements per channel.
-        g_CARRY4_COUNT   : positive := 100;
+        g_CARRY4_COUNT   : positive := 124;
         -- Number of raw output bits.
         g_RAW_COUNT      : positive := 9;
         -- Number of fractional part bits.
@@ -53,7 +53,7 @@ entity tdc is
         -- Frequency counter width.
         g_FCOUNTER_WIDTH : positive := 13;
         -- Frequency counter timer width.
-        g_FTIMER_WIDTH   : positive := 10
+        g_FTIMER_WIDTH   : positive := 14
     );
     port(
         clk_i        : in std_logic;
