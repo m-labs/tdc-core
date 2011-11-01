@@ -1,0 +1,3 @@
+- integrator with anti-windup
+- frequency error overflow checking/clamping (no recovery after loss-of-lock event)
+- clock multiplexing: allow for UP0/UP1/local reference clock dynamic switching

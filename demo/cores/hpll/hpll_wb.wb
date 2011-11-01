@@ -1,0 +1,314 @@
+-- -*- Mode: LUA; tab-width: 2 -*-
+
+peripheral
+{
+	name = "DMTD Helper PLL";
+	description = "PLL controller for generating the DMTD offset clock.";
+	prefix = "HPLL";
+
+	hdl_entity = "hpll_wb_slave";
+
+	reg {
+	    name = "HPLL Control Register";
+	    description = "HPLL Control register";
+	    prefix = "PCR";
+
+	    field {
+	    	  name = "PLL Enable";
+		  description = "1: PLL is enabled \
+		  	         0: PLL is disabled";
+		  
+		  type = BIT;
+		  prefix = "ENABLE";
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	  
+	    };
+
+	    field {
+	    	  name = "PLL Force Freq mode";
+		  type = BIT;
+		  prefix = "FORCE_F";
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	  		  
+	    };
+
+	 
+
+	    field {
+	    	  name = "DAC serial clock select";
+		  description = "Selects the DAC serial clock frequency: \
+		  	         0: f = refclk / 8 (~ 16 MHz) \
+		  	         1: f = refclk / 16 (~ 8 MHz) \
+		  	         2: f = refclk / 32 (~ 4 MHz) \
+		  	         3: f = refclk / 64 (~ 2 MHz) \
+		  	         4: f = refclk / 128 (~ 1 MHz) \
+		  	         5: f = refclk / 256 (~ 500 kHz) \
+		  	         6: f = refclk / 512 (~ 250 kHz) \
+		  	         7: f = refclk / 1024 (~ 125 kHz)";
+ 
+		  prefix = "DAC_CLKSEL";
+		  align = 4;
+		  type = SLV;
+		  size = 3;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY; 
+	    };
+
+	    field {
+	    	  name = "Phase detector gating period";
+		  description = "Gating period for the phase detector: \
+		  	         0: period = 1024 \
+				 1: period = 2048 \
+ 				 2: period = 4096 \
+				 3: period = 8192 \
+				 4: period = 16384 \
+				 5: period = 32768 \
+				 6: period = 65536 \
+				 7: period = 131072";
+
+	           prefix = "PD_GATE";
+		   type = SLV;
+		   size = 3;
+		   align = 4;
+		   access_bus = READ_WRITE;
+		   access_dev = READ_ONLY;
+	    };
+
+			field {
+				 name = "Reference clock input select";
+				 description = "00: local reference (from TCXO)\
+				                01: uplink 0 recovered clock\
+				                10: uplink 1 recovered clock";
+
+				 size = 2;
+				 type = SLV;
+				 prefix = "REFSEL";
+				 access_bus = READ_WRITE;
+				 access_dev = READ_ONLY;
+			};
+
+
+	    field {
+	    	  name = "PLL Reset";
+		  descritpion = "write 1: causes PLL reset\nwrite 0: no effect";
+		  type = MONOSTABLE;
+		  prefix = "SWRST";
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	  
+		  align=31;
+	    };
+	};
+
+	reg {
+	    name = "HPLL Divider Register";
+	    description = "Register controlling the frequency PLL frequency divider. The output frequency is f_ref * (DIV_FB / DIV_REF)";
+	    prefix = "DIVR";
+	    
+ 	    field {
+	    	  name = "Reference divider";
+		  prefix = "DIV_REF";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };  
+
+ 	    field {
+	    	  name = "Feedback divider";
+		  prefix = "DIV_FB";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };  
+
+
+	};
+
+	reg {
+	    name = "HPLL Frequency Branch Gain Register";
+	    description = "Register containing the PI gain factors for the frequency branch.";
+
+	    prefix = "FBGR";
+	   
+	    field {
+	    	  name = "Proportional gain (Kp)";
+		  prefix = "F_KP";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };
+
+	    field {
+	    	  name = "Integral gain (Ki)";
+		  prefix = "F_KI";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };
+	};
+
+	reg {
+	    name = "HPLL Phase Branch Gain Register";
+	    prefix = "PBGR";
+	   
+	    field {
+	    	  name = "Proportional gain (Kp)";
+		  prefix = "P_KP";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };
+
+	    field {
+	    	  name = "Integral gain (Ki)";
+		  prefix = "P_KI";
+		  size = 16;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;	 
+	    };
+	};
+
+	reg {
+	    name = "HPLL Lock Detect Control Register";
+	    prefix = "LDCR";
+
+	    field {
+	    	  name = "Phase Lock detect threshold";
+				 prefix = "LD_THR";
+				 description = "A maximum time between bang-bang PD phase error sign changes that keeps the PLL locked";
+				 type = SLV;
+				 size = 8;
+				 align = 4; 
+				 access_bus = READ_WRITE;
+				 access_dev = READ_ONLY;
+	    };
+
+	    field {
+	    	  name = "Lock detect samples";
+		  prefix = "LD_SAMP";
+				 description = "Number of subsequent phase error samples smaller than LD_THR or frequency error samples in (-1, 1) after which the PLL assumes to be locked.";
+		  type =SLV;
+		  size = 8;
+		  align = 8;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;
+	    };
+    };
+    reg {
+        name = "HPLL Frequency branch control register";
+	prefix = "FBCR";
+
+   	    field {
+	    	  name = "Frequency detector gating period";
+		  description = "Gating period for the frequency detector: \
+		  	         0: period = 16384 \
+				 1: period = 32768 \
+ 				 2: period = 65536 \
+				 3: period = 131072 \
+				 4: period = 262144 \
+				 5: period = 524288 \
+				 6: period = 1048576 \
+				 7: period = 2097152";
+	           prefix = "FD_GATE";
+		   type = SLV;
+		   size = 3;
+		   access_bus = READ_WRITE;
+		   access_dev = READ_ONLY;
+		   align =4;
+	    };
+
+	    field {
+	    	  name = "Frequency error setpoint";
+		  description = "Value of desired frequency error in the lock state. Computed as: f_err = FD_GATE[real value] * (1 - (N / (N+DELTA)))";
+		  prefix = "FERR_SET";
+		  align = 4;
+		  size = 12;
+		  type = SLV;
+		  access_bus = READ_WRITE;
+		  access_dev = READ_ONLY;
+	    };
+	};
+
+
+	reg {
+	    name = "HPLL Status Register";
+	    description = "Register containing the current status of the PLL";
+	    prefix = "PSR";
+
+	    field {
+	    	  name = "Frequency lock";
+	    	  type = BIT;
+		      prefix = "FREQ_LK";
+		  access_bus = READ_ONLY;
+		  access_dev = WRITE_ONLY;	  
+	    };
+
+	    field {
+	    	  name = "Phase lock";
+		  type = BIT;
+		  prefix = "PHASE_LK";
+		  access_bus = READ_ONLY;
+		  access_dev = WRITE_ONLY;	  
+	    };
+
+	    field {
+	    	  name = "Loss-of-lock indicator";
+		  description = "read 0: PLL is locked\
+		  	      	 read 1: PLL has lost the lock since the last poll of this bit\
+				 write 0: no effect\
+				 write 1: clears the field";
+
+		  type = BIT;
+		  prefix = "LOCK_LOST";
+		  access_bus = READ_WRITE;
+		  access_dev = READ_WRITE;	  
+		  load = LOAD_EXT;
+	    };
+
+    };
+		
+  fifo_reg {
+		 name = "HPLL Phase/Output record FIFO";
+		 description = "A FIFO recording the phase/freq error, the DAC output and other PLL parameters for debugging/optimization purposes";
+		 prefix = "RFIFO";
+
+		 direction = CORE_TO_BUS;
+		 size = 1024;
+
+		 flags_bus = {FIFO_EMPTY};
+		 flags_dev = {FIFO_FULL};
+
+
+		 field {
+				name = "Freq/phase error";
+				description = "Current frequency/phase error value";
+				prefix = "ERR_VAL";
+				type = SLV;
+				size = 12;
+		 };
+
+		 field {
+				name = "Freq/phase mode";
+				description = "1: frequency mode operation,\n 0: phase mode operation";
+				prefix = "FP_MODE";
+				type = BIT;
+				align = 15;
+				size = 1;
+		 };
+
+		 field {
+				name = "DAC output";
+				description = "Current DAC output value";
+				prefix = "DAC_VAL";
+				type = SLV;
+				size = 16;
+				align = 16;
+		 };
+	};
+
+};
