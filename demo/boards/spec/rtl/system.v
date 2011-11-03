@@ -37,6 +37,7 @@ module system(
 	output test_clk_p,
 	output test_clk_n,
 	output [1:0] tdc_signal_oe_n,
+	output [1:0] tdc_signal_term_en,
 	input [1:0] tdc_signal_p,
 	input [1:0] tdc_signal_n
 );
@@ -521,12 +522,14 @@ OBUFDS obuf_test_clk(
 );
 
 assign tdc_signal_oe_n[0] = 1'b1;
+assign tdc_signal_term_en[0] = 1'b1;
 IBUFDS ibuf_tdc_signal0(
 	.I(tdc_signal_p[0]),
 	.IB(tdc_signal_n[0]),
 	.O(tdc_signal[0])
 );
 assign tdc_signal_oe_n[1] = 1'b1;
+assign tdc_signal_term_en[1] = 1'b1;
 IBUFDS ibuf_tdc_signal1(
 	.I(tdc_signal_p[1]),
 	.IB(tdc_signal_n[1]),
