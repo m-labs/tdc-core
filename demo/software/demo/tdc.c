@@ -61,6 +61,7 @@ void calinfo()
 {
     int channel;
     int i;
+    int last;
     
     if(!(tdc->CS & TDC_CS_RDY)) {
         printf("Startup calibration not done\n");
@@ -90,8 +91,9 @@ void calinfo()
         }
         printf("\n\n");
         channel++;
+        last = tdc->CSEL & TDC_CSEL_LAST;
         tdc->CSEL = TDC_CSEL_NEXT;
-    } while(!(tdc->CSEL & TDC_CSEL_LAST));
+    } while(!last);
     
     tdc->DCTL = 0;
 }
