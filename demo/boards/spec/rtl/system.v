@@ -505,10 +505,10 @@ tdc_ringosc #(
 	.en_i(~sys_rst),
 	.clk_o(cal_clk16x)
 );
-reg [18:0] cal_clkdiv;
+reg [22:0] cal_clkdiv;
 always @(posedge cal_clk16x) cal_clkdiv <= cal_clkdiv + 4'd1;
 assign cal_clk = cal_clkdiv[3];
-assign test_clk = cal_clkdiv[18];
+assign test_clk = cal_clkdiv[22];
 
 assign tdc_calib = {2{cal_clk}};
 
