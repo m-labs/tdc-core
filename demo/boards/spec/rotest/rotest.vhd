@@ -43,12 +43,15 @@ use work.tdc_package.all;
 
 entity rotest is
     port(
-        en    : in std_logic;
-        led   : out std_logic;
+        en      : in std_logic;
+        led     : out std_logic;
         
-        out_p : out std_logic;
-        out_n : out std_logic;
-        oe_n  : out std_logic
+        out_p   : out std_logic;
+        out_n   : out std_logic;
+        oe_n    : out std_logic;
+        
+        term_e1 : out std_logic;
+        term_e2 : out std_logic
     );
 end entity;
 
@@ -66,7 +69,7 @@ begin
         );
     cmp_ringosc: tdc_ringosc
         generic map(
-            g_LENGTH => 31
+            g_LENGTH => 131
         )
         port map(
             en_i  => en,
@@ -74,4 +77,7 @@ begin
         );
     led <= not en;
     oe_n <= '0';
+    
+    term_e1 <= '1';
+    term_e2 <= '1';
 end architecture;
