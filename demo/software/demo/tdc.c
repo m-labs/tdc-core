@@ -20,6 +20,7 @@
 #include <uart.h>
 #include <hw/tdc.h>
 
+#include "temperature.h"
 #include "tdc.h"
 
 static volatile struct TDC_WB *tdc = (void *)0xa0000000;
@@ -36,6 +37,7 @@ void rofreq()
     while(!(tdc->DCTL & TDC_DCTL_ACK));
     
     while(!readchar_nonblock()) {
+        temp();
         channel = 0;
         do {
             tdc->FCC = TDC_FCC_ST;
