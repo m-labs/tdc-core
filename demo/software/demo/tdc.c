@@ -27,9 +27,9 @@ static volatile struct TDC_WB *tdc = (void *)0xa0000000;
 
 void rofreq()
 {
-    int channel;
     int val;
     int last;
+    int t;
     
     /* reset into debug mode, so this will always work */
     tdc->DCTL = TDC_DCTL_REQ;
@@ -37,14 +37,13 @@ void rofreq()
     while(!(tdc->DCTL & TDC_DCTL_ACK));
     
     while(!readchar_nonblock()) {
-        temp();
-        channel = 0;
+        t = gettemp();
+        printf("%d.%04d", t/16, (t%16)*625);
         do {
             tdc->FCC = TDC_FCC_ST;
             while(!(tdc->FCC & TDC_FCC_RDY));
             val = tdc->FCR;
-            printf("CHANNEL %d: %d\n", channel, val);
-            channel++;
+            printf(",%d", val);
             last = tdc->CSEL & TDC_CSEL_LAST;
             tdc->CSEL = TDC_CSEL_NEXT;
         } while(!last);
