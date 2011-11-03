@@ -143,7 +143,7 @@ void diff()
         rts0 = tdc->RAW0;
         rts1 = tdc->RAW1;
         #ifdef CSV
-        printf("%d,%d,%d,%d,%d,%d\n", pol0, rts0, ts0, pol1, rts1, ts1);
+        printf("%u,%u,%u,%u,%u,%u\n", pol0, rts0, ts0, pol1, rts1, ts1);
         #else
         diff = ts0 - ts1;
         if(diff < 0)
