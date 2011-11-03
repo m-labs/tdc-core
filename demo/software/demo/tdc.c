@@ -110,3 +110,51 @@ void mraw()
         tdc->EIC_ISR = TDC_EIC_ISR_IE0;
     }
 }
+
+#define CSV
+
+void diff()
+{
+    int pol0, pol1;
+    unsigned int rts0, rts1;
+    unsigned int ts0, ts1;
+#ifndef CSV
+    int diff;
+    int rdiff;
+#endif
+    
+    if(!(tdc->CS & TDC_CS_RDY)) {
+        printf("Startup calibration not done\n");
+        return;
+    }
+    tdc->EIC_IER = TDC_EIC_IER_IE0|TDC_EIC_IER_IE1;
+    while(1) {
+        while((tdc->EIC_ISR & (TDC_EIC_ISR_IE0|TDC_EIC_IER_IE1)) != (TDC_EIC_ISR_IE0|TDC_EIC_IER_IE1)) {
+            if(readchar_nonblock()) return;
+        }
+        pol0 = pol1 = tdc->POL;
+        pol0 = !!(pol0 & 0x01);
+        pol1 = !!(pol1 & 0x02);
+        ts0 = tdc->MESL0;
+        ts1 = tdc->MESL1;
+        rts0 = tdc->RAW0;
+        rts1 = tdc->RAW1;
+        #ifdef CSV
+        printf("%d,%d,%d,%d,%d,%d\n", pol0, rts0, ts0, pol1, rts1, ts1);
+        #else
+        diff = ts0 - ts1;
+        if(diff < 0)
+            diff = -diff;
+        rdiff = rts0 - rts1;
+        if(rdiff < 0)
+            rdiff = -rdiff;
+        printf("0: %dps [%d/%d]  1: %dps [%d/%d]  diff: %dps [%d]\n", 
+            ts0*977/1000, rts0, pol0,
+            ts1*977/1000, rts1, pol1,
+            diff*977/1000, rdiff);
+        #endif
+        if(pol0 != pol1)
+            printf("Inconsistent polarities!\n");
+        tdc->EIC_ISR = TDC_EIC_ISR_IE0|TDC_EIC_ISR_IE1;
+    }
+}

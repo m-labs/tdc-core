@@ -16,7 +16,7 @@
 
 \title{Time to Digital Converter core for Spartan-6 FPGAs}
 \author{S\'ebastien Bourdeauducq}
-\date{October 2011}
+\date{November 2011}
 \begin{document}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
@@ -238,9 +238,9 @@ NET "cmp_tdc/cmp_channelbank/g_single.cmp_channelbank
 Or, for multiple channels:
 \begin{verbatim}
 NET "cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank
-/cmp_channel[0]/muxed_signal" TIG;
+/g_channels[0].cmp_channel/muxed_signal" TIG;
 NET "cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank
-/cmp_channel[1]/muxed_signal" TIG;
+/g_channels[1].cmp_channel/muxed_signal" TIG;
 \end{verbatim}
 
 One constraint must be added per channel, and the numbers ``0'', ``1'', ... incremented accordingly.

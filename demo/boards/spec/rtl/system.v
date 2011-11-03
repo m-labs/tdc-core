@@ -33,7 +33,12 @@ module system(
 	inout onewire,
 	
 	// TDC
-	input tdc_signal
+	output test_clk_oe_n,
+	output test_clk_p,
+	output test_clk_n,
+	output [1:0] tdc_signal_oe_n,
+	input [1:0] tdc_signal_p,
+	input [1:0] tdc_signal_n
 );
 
 //------------------------------------------------------------------
@@ -458,10 +463,11 @@ assign onewire = onewire_drivelow ? 1'b0 : 1'bz;
 //---------------------------------------------------------------------------
 // TDC
 //---------------------------------------------------------------------------
-wire tdc_calib;
+wire [1:0] tdc_signal;
+wire [1:0] tdc_calib;
 
 tdc_hostif #(
-	.g_CHANNEL_COUNT(1),
+	.g_CHANNEL_COUNT(2),
 	.g_CARRY4_COUNT(124),
 	.g_RAW_COUNT(9),
 	.g_FP_COUNT(13),
@@ -492,16 +498,39 @@ tdc_hostif #(
 // startup calibration oscillator
 wire cal_clk16x;
 wire cal_clk;
+wire test_clk;
 tdc_ringosc #(
 	.g_LENGTH(31)
 ) calib_osc (
 	.en_i(~sys_rst),
 	.clk_o(cal_clk16x)
 );
-reg [3:0] cal_clkdiv;
+reg [18:0] cal_clkdiv;
 always @(posedge cal_clk16x) cal_clkdiv <= cal_clkdiv + 4'd1;
 assign cal_clk = cal_clkdiv[3];
+assign test_clk = cal_clkdiv[18];
 
-assign tdc_calib = cal_clk;
+assign tdc_calib = {2{cal_clk}};
+
+// IO
+assign test_clk_oe_n = 1'b0;
+OBUFDS obuf_test_clk(
+	.O(test_clk_p),
+	.OB(test_clk_n),
+	.I(test_clk)
+);
+
+assign tdc_signal_oe_n[0] = 1'b1;
+IBUFDS ibuf_tdc_signal0(
+	.I(tdc_signal_p[0]),
+	.IB(tdc_signal_n[0]),
+	.O(tdc_signal[0])
+);
+assign tdc_signal_oe_n[1] = 1'b1;
+IBUFDS ibuf_tdc_signal1(
+	.I(tdc_signal_p[1]),
+	.IB(tdc_signal_n[1]),
+	.O(tdc_signal[1])
+);
 
 endmodule

@@ -224,6 +224,7 @@ static void do_command(char *c)
 	else if(strcmp(token, "calinfo") == 0) calinfo();
 	else if(strcmp(token, "mraw") == 0) mraw();
 	else if(strcmp(token, "temp") == 0) temp();
+	else if(strcmp(token, "diff") == 0) diff();
 	
 	else if(strcmp(token, "") != 0)
 		printf("Command not found\n");

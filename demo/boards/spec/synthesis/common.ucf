@@ -21,9 +21,19 @@ NET "led[2]" LOC = F18 | IOSTANDARD = "LVCMOS18";
 NET "led[3]" LOC = C20 | IOSTANDARD = "LVCMOS18";
 NET "onewire" LOC = D4 | IOSTANDARD = "LVCMOS25";
 
-# ==== TDC inputs ====
-# FIXME
-NET "tdc_signal" LOC = AB11 | IOSTANDARD = LVCMOS25 | PULLDOWN;
+# ==== TDC ====
+NET "test_clk_oe_n" LOC = V17 | IOSTANDARD = "LVCMOS25";
+NET "test_clk_p" LOC = W17 | IOSTANDARD = "LVDS_25";
+NET "test_clk_n" LOC = Y18 | IOSTANDARD = "LVDS_25";
+
+NET "tdc_signal_oe_n[0]" LOC = Y14 | IOSTANDARD = "LVCMOS25";
+NET "tdc_signal_p[0]" LOC = R11 | IOSTANDARD = "LVDS_25";
+NET "tdc_signal_n[0]" LOC = T11 | IOSTANDARD = "LVDS_25";
+
+NET "tdc_signal_oe_n[1]" LOC = W11 | IOSTANDARD = "LVCMOS25";
+NET "tdc_signal_p[1]" LOC = W12 | IOSTANDARD = "LVDS_25";
+NET "tdc_signal_n[1]" LOC = Y12 | IOSTANDARD = "LVDS_25";
 
 # ==== TDC core ====
-NET "tdc/cmp_tdc/cmp_channelbank/g_single.cmp_channelbank/cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/muxed_signal" TIG;
