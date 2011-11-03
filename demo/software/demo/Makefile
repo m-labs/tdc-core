@@ -1,7 +1,7 @@
 MMDIR=../..
 include $(MMDIR)/software/include.mak
 
-OBJECTS=crt0.o main.o tdc.o temperature.o
+OBJECTS=crt0.o main.o tdc.o udelay.o temperature.o dac.o
 SEGMENTS=-j .text -j .data -j .rodata
 
 all: demo.bin demo.h0 demo.h1 demo.h2 demo.h3

@@ -31,6 +31,8 @@ module system(
 	input btn,
 	output [3:0] led,
 	inout onewire,
+	output scl,
+	inout sda,
 	
 	// TDC
 	output test_clk_oe_n,
@@ -436,10 +438,13 @@ uart #(
 // System Controller
 //---------------------------------------------------------------------------
 wire onewire_drivelow;
+wire gpio_sdc;
+wire gpio_sdaoe;
+wire gpio_sdaout;
 sysctl #(
 	.csr_addr(4'h1),
-	.ninputs(2),
-	.noutputs(5),
+	.ninputs(3),
+	.noutputs(8),
 	.systemid(32'h53504543) /* SPEC */
 ) sysctl (
 	.sys_clk(sys_clk),
@@ -454,12 +459,14 @@ sysctl #(
 	.csr_di(csr_dw),
 	.csr_do(csr_dr_sysctl),
 
-	.gpio_inputs({onewire, btn}),
-	.gpio_outputs({onewire_drivelow, led}),
+	.gpio_inputs({sda, onewire, btn}),
+	.gpio_outputs({gpio_sdaout, gpio_sdaoe, gpio_sdc, onewire_drivelow, led}),
 
 	.hard_reset(hard_reset)
 );
 assign onewire = onewire_drivelow ? 1'b0 : 1'bz;
+assign sdc = ~gpio_sdc ? 1'b0 : 1'bz;
+assign sda = (gpio_sdaoe & ~gpio_sdaout) ? 1'b0 : 1'bz;
 
 //---------------------------------------------------------------------------
 // TDC

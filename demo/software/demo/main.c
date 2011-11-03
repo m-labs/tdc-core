@@ -27,6 +27,7 @@
 #include <hw/uart.h>
 
 #include "tdc.h"
+#include "dac.h"
 #include "temperature.h"
 
 /* General address space functions */
@@ -189,6 +190,24 @@ static void crc(char *startaddr, char *len)
 	printf("CRC32: %08x\n", crc32((unsigned char *)addr, length));
 }
 
+static void daclevel(char *level)
+{
+	char *c;
+	unsigned int level2;
+
+	if(*level == 0) {
+		printf("daclevel <level> \n");
+		return;
+	}
+	level2 = strtoul(level, &c, 0);
+	if(*c != 0) {
+		printf("incorrect level\n");
+		return;
+	}
+	set_dac_level(level2);
+}
+
+
 /* Init + command line */
 
 static char *get_token(char **str)
@@ -220,10 +239,11 @@ static void do_command(char *c)
 	else if(strcmp(token, "reboot") == 0) reboot();
 	
 	/* payload */
+	else if(strcmp(token, "temp") == 0) temp();
 	else if(strcmp(token, "rofreq") == 0) rofreq();
 	else if(strcmp(token, "calinfo") == 0) calinfo();
+	else if(strcmp(token, "daclevel") == 0) daclevel(get_token(&c));
 	else if(strcmp(token, "mraw") == 0) mraw();
-	else if(strcmp(token, "temp") == 0) temp();
 	else if(strcmp(token, "diff") == 0) diff();
 	
 	else if(strcmp(token, "") != 0)

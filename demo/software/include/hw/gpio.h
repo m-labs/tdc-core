@@ -22,6 +22,7 @@
 /* Inputs */
 #define GPIO_PB2		(0x00000001)
 #define GPIO_1W			(0x00000002)
+#define GPIO_I2C_SDAIN		(0x00000004)
 
 /* Outputs */
 #define GPIO_LD2		(0x00000001)
@@ -29,5 +30,8 @@
 #define GPIO_LD4		(0x00000004)
 #define GPIO_LD5		(0x00000008)
 #define GPIO_1W_DRIVELOW	(0x00000010)
+#define GPIO_I2C_SDC		(0x00000020)
+#define GPIO_I2C_SDAOE		(0x00000040)
+#define GPIO_I2C_SDAOUT		(0x00000080)
 
 #endif /* __HW_GPIO_H */
