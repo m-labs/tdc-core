@@ -284,8 +284,8 @@ int main(int i, char **c)
 
 	/* Display a banner as soon as possible to show that the system is alive */
 	putsnonl(banner);
-
 	crcsw();
+	tdc_reset();
 
 	while(1) {
 		putsnonl("\e[1mTDC>\e[0m ");

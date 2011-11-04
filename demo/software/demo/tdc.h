@@ -19,6 +19,7 @@
 #ifndef __TDC_H
 #define __TDC_H
 
+void tdc_reset();
 void rofreq();
 void calinfo();
 void mraw();

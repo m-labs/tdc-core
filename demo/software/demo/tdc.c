@@ -25,6 +25,11 @@
 
 static volatile struct TDC_WB *tdc = (void *)0xa0000000;
 
+void tdc_reset()
+{
+    tdc->CS = TDC_CS_RST;
+}
+
 void rofreq()
 {
     int val;
