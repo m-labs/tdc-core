@@ -10,8 +10,9 @@ SRC_VHDL=$(CORES_SRC_VHDL)
 
 all: build/system.bit
 
-build/system.ucf: common.ucf xst.ucf
+build/system.ucf: common.ucf xst.ucf floorplan_oscillators.py
 	cat common.ucf xst.ucf > build/system.ucf
+	./floorplan_oscillators.py >> build/system.ucf
 
 build/system.prj: $(SRC) $(SRC_VHDL)
 	rm -f build/system.prj
