@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-10-25 SB Added single/multi channel bank components
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
@@ -43,6 +44,7 @@ component tdc is
         g_CARRY4_COUNT   : positive := 100;
         g_RAW_COUNT      : positive := 9;
         g_FP_COUNT       : positive := 13;
+        g_EXHIS_COUNT    : positive := 4;
         g_COARSE_COUNT   : positive := 25;
         g_RO_LENGTH      : positive := 20;
         g_FCOUNTER_WIDTH : positive := 13;
@@ -74,7 +76,7 @@ component tdc is
         lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
         his_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
-        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
         oc_start_i   : in std_logic;
         oc_ready_o   : out std_logic;
         oc_freq_o    : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
@@ -86,6 +88,7 @@ component tdc_controller is
     generic(
         g_RAW_COUNT      : positive;
         g_FP_COUNT       : positive;
+        g_EXHIS_COUNT    : positive;
         g_FCOUNTER_WIDTH : positive
     );
     port(
@@ -105,8 +108,8 @@ component tdc_controller is
         c_raw_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_o      : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_o     : out std_logic;
-        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_i      : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_i      : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
         oc_start_o   : out std_logic;
         oc_ready_i   : in std_logic;
@@ -125,6 +128,7 @@ component tdc_channelbank is
         g_CARRY4_COUNT   : positive;
         g_RAW_COUNT      : positive;
         g_FP_COUNT       : positive;
+        g_EXHIS_COUNT    : positive;
         g_COARSE_COUNT   : positive;
         g_RO_LENGTH      : positive;
         g_FCOUNTER_WIDTH : positive;
@@ -159,8 +163,8 @@ component tdc_channelbank is
         c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_i    : in std_logic;
-        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_i     : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
         oc_start_i  : in std_logic;
         oc_ready_o  : out std_logic;
@@ -175,6 +179,7 @@ component tdc_channelbank_single is
         g_CARRY4_COUNT   : positive;
         g_RAW_COUNT      : positive;
         g_FP_COUNT       : positive;
+        g_EXHIS_COUNT    : positive;
         g_COARSE_COUNT   : positive;
         g_RO_LENGTH      : positive;
         g_FCOUNTER_WIDTH : positive;
@@ -209,8 +214,8 @@ component tdc_channelbank_single is
         c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_i    : in std_logic;
-        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_i     : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
         oc_start_i  : in std_logic;
         oc_ready_o  : out std_logic;
@@ -226,6 +231,7 @@ component tdc_channelbank_multi is
         g_CARRY4_COUNT   : positive;
         g_RAW_COUNT      : positive;
         g_FP_COUNT       : positive;
+        g_EXHIS_COUNT    : positive;
         g_COARSE_COUNT   : positive;
         g_RO_LENGTH      : positive;
         g_FCOUNTER_WIDTH : positive;
@@ -260,8 +266,8 @@ component tdc_channelbank_multi is
         c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_i    : in std_logic;
-        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_i     : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
         oc_start_i  : in std_logic;
         oc_ready_o  : out std_logic;

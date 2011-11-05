@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-10-27 SB Fix accumulator overflow
 -- 2011-10-27 SB Fix LUT address offset
 -- 2011-08-19 SB Created file
@@ -44,6 +45,7 @@ entity tdc_controller is
     generic(
         g_RAW_COUNT      : positive;
         g_FP_COUNT       : positive;
+        g_EXHIS_COUNT    : positive;
         g_FCOUNTER_WIDTH : positive
     );
     port(
@@ -63,8 +65,8 @@ entity tdc_controller is
         c_raw_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_o      : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_o     : out std_logic;
-        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_i      : in std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_i      : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
         oc_start_o   : out std_logic;
         oc_ready_i   : in std_logic;
@@ -81,7 +83,7 @@ architecture rtl of tdc_controller is
 
 signal ready_p: std_logic;
 
-signal hc_count : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal hc_count : std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 signal hc_reset : std_logic;
 signal hc_dec   : std_logic;
 signal hc_zero  : std_logic;
@@ -92,7 +94,7 @@ signal ha_inc   : std_logic;
 signal ha_last  : std_logic;
 signal ha_sel   : std_logic;
 
-signal acc       : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal acc       : std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 signal acc_reset : std_logic;
 signal acc_en    : std_logic;
 
@@ -175,7 +177,9 @@ begin
     process(clk_i)
     begin
         if rising_edge(clk_i) then
-            mul <= std_logic_vector(unsigned(acc) * unsigned(oc_sfreq_i));
+            mul <= std_logic_vector(
+                unsigned(acc(g_FP_COUNT+g_EXHIS_COUNT-1 downto g_EXHIS_COUNT))
+                * unsigned(oc_sfreq_i));
             mul_d1 <= mul;
         end if;
     end process;

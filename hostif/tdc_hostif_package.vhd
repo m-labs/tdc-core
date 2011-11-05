@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-08-27 SB Reduced supported channel count to 8
 -- 2011-08-25 SB Created file
 -------------------------------------------------------------------------------
@@ -44,6 +45,7 @@ component tdc_hostif is
         g_CARRY4_COUNT   : positive := 100;
         g_RAW_COUNT      : positive := 9;
         g_FP_COUNT       : positive := 13;
+        g_EXHIS_COUNT    : positive := 4;
         g_COARSE_COUNT   : positive := 25;
         g_RO_LENGTH      : positive := 20;
         g_FCOUNTER_WIDTH : positive := 13;

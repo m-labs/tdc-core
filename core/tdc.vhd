@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-08-17 SB Created file
 -------------------------------------------------------------------------------
 
@@ -46,6 +47,8 @@ entity tdc is
         g_RAW_COUNT      : positive := 9;
         -- Number of fractional part bits.
         g_FP_COUNT       : positive := 13;
+        -- Number of extra histogram bits.
+        g_EXHIS_COUNT    : positive := 4;
         -- Number of coarse counter bits.
         g_COARSE_COUNT   : positive := 25;
         -- Length of each ring oscillator.
@@ -86,7 +89,7 @@ entity tdc is
         lut_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         lut_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
         his_a_i      : in std_logic_vector(g_RAW_COUNT-1 downto 0);
-        his_d_o      : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_o      : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
         oc_start_i   : in std_logic;
         oc_ready_o   : out std_logic;
         oc_freq_o    : out std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
@@ -112,8 +115,8 @@ signal c_raw       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal his_a       : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal his_a_c     : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal his_we      : std_logic;
-signal his_d_w     : std_logic_vector(g_FP_COUNT-1 downto 0);
-signal his_d_r     : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal his_d_w     : std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+signal his_d_r     : std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 
 signal oc_start    : std_logic;
 signal oc_start_c  : std_logic;
@@ -130,6 +133,7 @@ begin
             g_CARRY4_COUNT   => g_CARRY4_COUNT,
             g_RAW_COUNT      => g_RAW_COUNT,
             g_FP_COUNT       => g_FP_COUNT,
+            g_EXHIS_COUNT    => g_EXHIS_COUNT,
             g_COARSE_COUNT   => g_COARSE_COUNT,
             g_RO_LENGTH      => g_RO_LENGTH,
             g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH,
@@ -178,6 +182,7 @@ begin
         generic map(
             g_RAW_COUNT      => g_RAW_COUNT,
             g_FP_COUNT       => g_FP_COUNT,
+            g_EXHIS_COUNT    => g_EXHIS_COUNT,
             g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH
         )
         port map(

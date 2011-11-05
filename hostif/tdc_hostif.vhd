@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-08-27 SB Reduced supported channel count to 8
 -- 2011-08-26 SB Created file
 -------------------------------------------------------------------------------
@@ -44,6 +45,7 @@ entity tdc_hostif is
         g_CARRY4_COUNT   : positive := 124;
         g_RAW_COUNT      : positive := 9;
         g_FP_COUNT       : positive := 13;
+        g_EXHIS_COUNT    : positive := 4;
         g_COARSE_COUNT   : positive := 25;
         g_RO_LENGTH      : positive := 31;
         g_FCOUNTER_WIDTH : positive := 13;
@@ -87,7 +89,7 @@ signal calib_sel  : std_logic;
 signal lut_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
 signal lut_d      : std_logic_vector(g_FP_COUNT-1 downto 0);
 signal his_a      : std_logic_vector(g_RAW_COUNT-1 downto 0);
-signal his_d      : std_logic_vector(g_FP_COUNT-1 downto 0);
+signal his_d      : std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
 signal oc_start   : std_logic;
 signal oc_ready   : std_logic;
 signal oc_freq    : std_logic_vector(g_FCOUNTER_WIDTH-1 downto 0);
@@ -115,6 +117,7 @@ begin
             g_CARRY4_COUNT   => g_CARRY4_COUNT,
             g_RAW_COUNT      => g_RAW_COUNT,
             g_FP_COUNT       => g_FP_COUNT,
+            g_EXHIS_COUNT    => g_EXHIS_COUNT,
             g_COARSE_COUNT   => g_COARSE_COUNT,
             g_RO_LENGTH      => g_RO_LENGTH,
             g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH,

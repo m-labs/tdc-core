@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-10-25 SB Created file
 -------------------------------------------------------------------------------
 
@@ -47,6 +48,8 @@ entity tdc_channelbank is
         g_RAW_COUNT      : positive;
         -- Number of fractional part bits.
         g_FP_COUNT       : positive;
+        -- Number of extra histogram bits.
+        g_EXHIS_COUNT    : positive;
         -- Number of coarse counter bits.
         g_COARSE_COUNT   : positive;
         -- Length of each ring oscillator.
@@ -91,8 +94,8 @@ entity tdc_channelbank is
         c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_i    : in std_logic;
-        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_i     : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
         
         -- Online calibration.
         oc_start_i  : in std_logic;
@@ -111,6 +114,7 @@ begin
                 g_CARRY4_COUNT   => g_CARRY4_COUNT,
                 g_RAW_COUNT      => g_RAW_COUNT,
                 g_FP_COUNT       => g_FP_COUNT,
+                g_EXHIS_COUNT    => g_EXHIS_COUNT,
                 g_COARSE_COUNT   => g_COARSE_COUNT,
                 g_RO_LENGTH      => g_RO_LENGTH,
                 g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH,
@@ -162,6 +166,7 @@ begin
                 g_CARRY4_COUNT   => g_CARRY4_COUNT,
                 g_RAW_COUNT      => g_RAW_COUNT,
                 g_FP_COUNT       => g_FP_COUNT,
+                g_EXHIS_COUNT    => g_EXHIS_COUNT,
                 g_COARSE_COUNT   => g_COARSE_COUNT,
                 g_RO_LENGTH      => g_RO_LENGTH,
                 g_FCOUNTER_WIDTH => g_FCOUNTER_WIDTH,

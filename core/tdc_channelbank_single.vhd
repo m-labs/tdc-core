@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-05 SB Added extra histogram bits support
 -- 2011-10-25 SB Created file
 -------------------------------------------------------------------------------
 
@@ -39,19 +40,13 @@ use work.genram_pkg.all;
 
 entity tdc_channelbank_single is
     generic(
-        -- Number of CARRY4 elements per channel.
         g_CARRY4_COUNT   : positive;
-        -- Number of raw output bits.
         g_RAW_COUNT      : positive;
-        -- Number of fractional part bits.
         g_FP_COUNT       : positive;
-        -- Number of coarse counter bits.
+        g_EXHIS_COUNT    : positive;
         g_COARSE_COUNT   : positive;
-        -- Length of each ring oscillator.
         g_RO_LENGTH      : positive;
-        -- Frequency counter width.
         g_FCOUNTER_WIDTH : positive;
-        -- Frequency counter timer width.
         g_FTIMER_WIDTH   : positive
     );
     port(
@@ -89,8 +84,8 @@ entity tdc_channelbank_single is
         c_raw_o     : out std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_a_i     : in std_logic_vector(g_RAW_COUNT-1 downto 0);
         his_we_i    : in std_logic;
-        his_d_i     : in std_logic_vector(g_FP_COUNT-1 downto 0);
-        his_d_o     : out std_logic_vector(g_FP_COUNT-1 downto 0);
+        his_d_i     : in std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
+        his_d_o     : out std_logic_vector(g_FP_COUNT+g_EXHIS_COUNT-1 downto 0);
         
         -- Online calibration.
         oc_start_i  : in std_logic;
@@ -150,7 +145,7 @@ begin
     -- Histogram memory.
     cmp_histogram: generic_spram
         generic map(
-            g_data_width               => g_FP_COUNT,
+            g_data_width               => g_FP_COUNT+g_EXHIS_COUNT,
             g_size                     => 2**g_RAW_COUNT,
             g_with_byte_enable         => false,
             g_init_file                => "",
