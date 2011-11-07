@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-07 SB Pre-inversion
 -- 2011-11-05 SB Added extra histogram bits support
 -- 2011-10-25 SB Added single/multi channel bank components
 -- 2011-08-03 SB Created file
@@ -339,13 +340,15 @@ end component;
 
 component tdc_lbc is
     generic(
-        g_N   : positive;
-        g_NIN : positive
+        g_N      : positive;
+        g_NIN    : positive;
+        g_IGNORE : natural
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
          d_i          : in std_logic_vector(g_NIN-1 downto 0);
+         ipolarity_o  : out std_logic;
          polarity_o   : out std_logic;
          count_o      : out std_logic_vector(g_N-1 downto 0)
     );

@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-07 SB Pre-inversion
 -- 2011-10-27 SB Fix pipeline balance
 -- 2011-08-01 SB Created file
 -------------------------------------------------------------------------------
@@ -41,14 +42,17 @@ use work.tdc_package.all;
 entity tdc_lbc is
     generic(
         -- Number of output bits.
-        g_N : positive;
+        g_N      : positive;
         -- Number of input bits. Maximum is 2^g_N-1.
-        g_NIN: positive
+        g_NIN    : positive;
+        -- Number of cycles to ignore input after a transition.
+        g_IGNORE : natural
     );
     port(
          clk_i        : in std_logic;
          reset_i      : in std_logic;
          d_i          : in std_logic_vector(g_NIN-1 downto 0);
+         ipolarity_o  : out std_logic;
          polarity_o   : out std_logic;
          count_o      : out std_logic_vector(g_N-1 downto 0)
     );
@@ -97,6 +101,7 @@ signal polarity_d1 : std_logic;
 signal count       : std_logic_vector(g_N-1 downto 0);
 signal count_d1    : std_logic_vector(g_N-1 downto 0);
 signal d_completed : std_logic_vector(2**g_N-2 downto 0);
+signal ignore      : std_logic;
 
 -- enable retiming
 attribute register_balancing: string;
@@ -105,7 +110,7 @@ attribute register_balancing of count_d1: signal is "backward";
 
 begin
     g_expand: if g_NIN < 2**g_N-1 generate
-        d_completed <= d_i & (2**g_N-1-g_NIN-1 downto 0 => not polarity);
+        d_completed <= d_i & (2**g_N-1-g_NIN-1 downto 0 => '0');
     end generate;
     g_dontexpand: if g_NIN = 2**g_N-1 generate
         d_completed <= d_i;
@@ -120,13 +125,43 @@ begin
                 count <= (others => '0');
                 count_d1 <= (others => '0');
             else
-                polarity <= not d_completed(2**g_N-2);
+                if (d_completed(2**g_N-2) = '1') and (ignore = '0') then
+                    polarity <= not polarity;
+                end if;
                 polarity_d1 <= not polarity;
-                count <= f_cls(d_completed, polarity);
+                count <= f_cls(d_completed, '1');
                 count_d1 <= count;
             end if;
         end if;
     end process;
+    
+    g_ignoresr: if g_IGNORE > 0 generate
+    signal ignore_sr: std_logic_vector(g_IGNORE-1 downto 0);
+    begin
+        process(clk_i)
+        begin
+            if rising_edge(clk_i) then
+                if reset_i = '1' then
+                    ignore_sr <= (others => '0');
+                else
+                    if (d_completed(2**g_N-2) = '1') and (ignore = '0') then
+                        ignore_sr <= (others => '0');
+                        ignore_sr(g_IGNORE-1) <= '1';
+                    else
+                        ignore_sr <= "0" & ignore_sr(g_IGNORE-1 downto 1);
+                    end if;
+                end if;
+            end if;
+        end process;
+        ignore <= '0' when (ignore_sr = (ignore_sr'range => '0')) else '1';
+    end generate;
+    
+    g_noignore: if g_IGNORE = 0 generate
+    begin
+        ignore <= '0';
+    end generate;
+    
+    ipolarity_o <= polarity;
     polarity_o <= polarity_d1;
     count_o <= count_d1;
 end architecture;

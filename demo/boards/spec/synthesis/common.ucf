@@ -41,11 +41,11 @@ NET "tdc_signal_p[1]" LOC = W12 | IOSTANDARD = "LVDS_25";
 NET "tdc_signal_n[1]" LOC = Y12 | IOSTANDARD = "LVDS_25";
 
 # ==== TDC core ====
-NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/muxed_signal" TIG;
-NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/muxed_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/inv_signal" TIG;
+NET "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/inv_signal" TIG;
 
-INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/Mmux_muxed_signal11" LOC = SLICE_X35Y0;
-INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/Mmux_muxed_signal11" LOC = SLICE_X35Y0;
+INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/Mxor_inv_signal_xo<0>1" LOC = SLICE_X35Y0;
+INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/Mxor_inv_signal_xo<0>1" LOC = SLICE_X35Y0;
 
 INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[0].cmp_channel/cmp_delayline/g_carry4[0].g_firstcarry4.cmp_CARRY4" LOC = SLICE_X30Y2;
 INST "tdc/cmp_tdc/cmp_channelbank/g_multi.cmp_channelbank/g_channels[1].cmp_channel/cmp_delayline/g_carry4[0].g_firstcarry4.cmp_CARRY4" LOC = SLICE_X32Y2;

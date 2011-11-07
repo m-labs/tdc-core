@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-07 SB Pre-inversion
 -- 2011-08-12 SB Test pipelining and polarity inversion
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
@@ -93,24 +94,27 @@ begin
     return result;
 end function;
 
-signal clk      : std_logic;
-signal reset    : std_logic;
-signal d        : std_logic_vector(2**g_N-2 downto 0);
-signal count    : std_logic_vector(g_N-1 downto 0);
-signal polarity : std_logic;
+signal clk       : std_logic;
+signal reset     : std_logic;
+signal d         : std_logic_vector(2**g_N-2 downto 0);
+signal count     : std_logic_vector(g_N-1 downto 0);
+signal ipolarity : std_logic;
+signal polarity  : std_logic;
 
 begin
     cmp_dut: tdc_lbc
         generic map(
-            g_N   => g_N,
-            g_NIN => 2**g_N-1
+            g_N      => g_N,
+            g_NIN    => 2**g_N-1,
+            g_IGNORE => 0
         )
         port map(
-            clk_i      => clk,
-            reset_i    => reset,
-            d_i        => d,
-            count_o    => count,
-            polarity_o => polarity
+            clk_i       => clk,
+            reset_i     => reset,
+            d_i         => d,
+            ipolarity_o => ipolarity,
+            polarity_o  => polarity,
+            count_o     => count
         );
     process
     variable v_polarity : std_logic;
@@ -122,6 +126,7 @@ begin
     variable v_stim     : std_logic_vector(0 downto 0);
     begin
         -- reset
+        d <= (others => '0');
         reset <= '1';
         clk <= '0';
         wait for 5 ns;
@@ -150,7 +155,9 @@ begin
                     end if;
                 end loop;
                 report "Vector out: " & str(v_d) & " (polarity: " & chr(v_polarity) & ")";
-                d <= v_d;
+                for j in 0 to 2**g_N-2 loop
+                    d(j) <= v_d(j) xor not ipolarity;
+                end loop;
             end if;
             -- verify output
             if i > 2 then

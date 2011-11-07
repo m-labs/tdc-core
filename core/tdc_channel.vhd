@@ -12,6 +12,7 @@
 --
 -------------------------------------------------------------------------------
 -- last changes:
+-- 2011-11-07 SB Pre-inversion
 -- 2011-10-25 SB Disable ring oscillator on reset
 -- 2011-08-03 SB Created file
 -------------------------------------------------------------------------------
@@ -90,7 +91,9 @@ end entity;
 architecture rtl of tdc_channel is
 signal calib_sel_d  : std_logic;
 signal muxed_signal : std_logic;
+signal inv_signal   : std_logic;
 signal taps         : std_logic_vector(4*g_CARRY4_COUNT-1 downto 0);
+signal ipolarity    : std_logic;
 signal polarity     : std_logic;
 signal polarity_d1  : std_logic;
 signal polarity_d2  : std_logic;
@@ -110,6 +113,7 @@ begin
     end process;
     with calib_sel_d select
         muxed_signal <= calib_i when '1', signal_i when others;
+    inv_signal <= muxed_signal xor not ipolarity;
     
     cmp_delayline: tdc_delayline
         generic map(
@@ -118,19 +122,21 @@ begin
         port map(
              clk_i        => clk_i,
              reset_i      => reset_i,
-             signal_i     => muxed_signal,
+             signal_i     => inv_signal,
              taps_o       => taps
         );
     
     cmp_lbc: tdc_lbc
         generic map(
-            g_N     => g_RAW_COUNT,
-            g_NIN   => g_CARRY4_COUNT*4
+            g_N      => g_RAW_COUNT,
+            g_NIN    => g_CARRY4_COUNT*4,
+            g_IGNORE => 2
         )
         port map(
              clk_i        => clk_i,
              reset_i      => reset_i,
              d_i          => taps,
+             ipolarity_o  => ipolarity,
              polarity_o   => polarity,
              count_o      => raw
         );
