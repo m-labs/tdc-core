@@ -43,7 +43,7 @@ The Time to Digital Converter (TDC) core is a high precision (sub-nanosecond) ti
 \item Calibration logic shared between channels.
 \end{itemize}
 \item Reports both rising and falling edges of the input signal.
-\item Input signal must not have transitions shorter than the FPGA clock period (e.g.\ the frequency of the input signal must be less than half of the FPGA clock).
+\item Input signal must not have transitions shorter than three times the FPGA clock period (e.g.\ the frequency of the input signal must be less than one sixth of the FPGA clock).
 \item Uses a counter for coarse timing and a calibrated delay line for fine timing.
 \item Delay line implemented with carry chain (\verb!CARRY4!) primitives.
 \item Calibration mechanism:
@@ -187,7 +187,7 @@ The top-level entity has the following ports. All signals are synchronous to the
 \item \verb!cc_cy_o! is pulsed when the coarse counter overflow. In other words, it is the coarse counter carry output.
 \item \verb!deskew_i! defines the per-channel deskew values added to all measurements. Each channel uses \verb!g_COARSE_COUNT!+\verb!g_FP_COUNT! bits. The value can be negative, using two's complement representation.
 \item \verb!signal_i! is the per-channel signal input (one bit per channel).
-\item \verb!calib_i! is the per-channel calibration signal input (one bit per channel). The calibration signal should not have transitions shorter than \textbf{two} periods of the system clock. If an oscillator is used to generate this signal, its frequency must be set to less than \textbf{one quarter} of the system clock.
+\item \verb!calib_i! is the per-channel calibration signal input (one bit per channel). The calibration signal should not have transitions shorter than \textbf{three} periods of the system clock. If an oscillator is used to generate this signal, its frequency must be set to less than \textbf{one sixth} of the system clock.
 \item \verb!detect_o! is pulsed after a transition of the input signal (one bit per channel). This signal should be ignored when \verb!ready_o! is low.
 \item \verb!polarity_o! indicates the detected edge type. If the value is 1, it means the core has detected a rising edge. If it is 0, it means a falling edge. There is one bit per channel.
 \item \verb!raw_o! gives the raw encoded timestamp, i.e.\ the number of reached taps in the delay line. There are \verb!g_RAW_COUNT! bits per channel.
