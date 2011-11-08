@@ -7,26 +7,26 @@ tdc.pdf: tdc.tex
 rofreq.pdf: rofreq.py rofreq.csv
 	./rofreq.py rofreq.csv rofreq.pdf
 
-mhistll.pdf: mhist.py series3a.csv
-	./mhist.py series3a.csv mhistll.pdf 0 fit
+scs.pdf: lutdiff.py
+	./lutdiff.py lt_cal1.csv lt_cal2.csv scs.pdf
 
-mhistlh.pdf: mhist.py series3a.csv
-	./mhist.py series3b.csv mhistlh.pdf 0 fit
+mhist.pdf: mhist.py series3a.csv
+	./mhist.py series3a.csv mhist.pdf 0 fit
 
-mhisthh.pdf: mhist.py series3a.csv
-	./mhist.py series3c.csv mhisthh.pdf 0 fit
+chtmlt.pdf: lutdiff.py
+	./lutdiff.py ht_cal1.csv lt_cal2.csv chtmlt.pdf
 
-mhisthl.pdf: mhist.py series3a.csv
-	./mhist.py series3d.csv mhisthl.pdf 0 fit
+chtmht.pdf: lutdiff.py
+	./lutdiff.py ht_cal1.csv ht_nocal.csv chtmht.pdf
 
-testreport.pdf: testreport.tex rofreq.pdf mhistll.pdf mhistlh.pdf mhisthh.pdf mhisthl.pdf
+testreport.pdf: testreport.tex rofreq.pdf scs.pdf mhist.pdf chtmlt.pdf chtmht.pdf
 	pdflatex $<
 	pdflatex $<
 
 clean:
 	rm -f tdc.pdf tdc.aux tdc.log
 	rm -f rofreq.pdf
-	rm -f mhistll.pdf mhistlh.pdf mhisthh.pdf mhisthl.pdf
+	rm -f mhist.pdf
 	rm -f testreport.pdf testreport.aux testreport.log
 
 .PHONY: clean

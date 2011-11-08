@@ -6,6 +6,7 @@
 \usepackage[english]{babel}
 \usepackage{listings,babel}
 \usepackage{palatino}
+\usepackage{gensymb}
 \lstset{breaklines=true,basicstyle=\ttfamily}
 \usepackage{graphicx}
 \usepackage{moreverb}
@@ -28,14 +29,14 @@
 
 \subsection{TDC core implementation details}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=1.6cm]{floorplan.png}
 \caption{Floorplan of the delay lines and ring oscillators in FPGA Editor.}
 \label{fig:floorplan}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \includegraphics[width=\textwidth]{input_routes.png}
 \caption{Input signal path in FPGA Editor.}
 \label{fig:inputpath}
@@ -48,43 +49,47 @@
 \section{Method and results}
 
 \subsection{Temperature measurement with ring oscillators}
+\label{sec:rofreq}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \includegraphics[width=\textwidth]{rofreq.pdf}
 \caption{Dependence of ring oscillator frequencies on temperature.}
 \label{fig:rofreq}
 \end{figure}
 
+\subsection{Startup calibration stability}
+Temperature is 37C.
+
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{scs.pdf}
+\caption{Difference between the LUT contents from two startup calibrations at the same temperature.}
+\label{fig:scs}
+\end{figure}
+
 \subsection{Differential TDC}
 
-Temperature is 36.9375C
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{mhistll.pdf}
-\caption{Differential measurements: low temperature calibration, low temperature measurements.}
+Temperature is 36.9375\degree C
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{mhist.pdf}
+\caption{Differential measurements}
 \label{fig:mhistll}
 \end{figure}
 
-\subsection{Temperature stability}
+\subsection{Temperature compensation}
+Even though the influence of temperature is small (\ref{sec:rofreq}), we can still see the action of the online calibration.
 
-Brought to 52.1875C
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{mhistlh.pdf}
-\caption{Differential measurements: low temperature calibration, high temperature measurements.}
-\label{fig:mhistlh}
+We brought the temperature to from 37\degree C to 47.875\degree C, and ran startup calibration again. We observed a significant difference between the LUT contents (figure \ref{fig:chtmlt}).
+
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{chtmlt.pdf}
+\caption{Difference between the LUT contents from two startup calibrations at high and low temperatures.}
+\label{fig:chtmlt}
 \end{figure}
 
-Recalibrated, still at 52.1875C
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{mhisthh.pdf}
-\caption{Differential measurements: high temperature calibration, high temperature measurements.}
-\label{fig:mhisthh}
-\end{figure}
-
-Brought to 38.75C
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{mhisthl.pdf}
-\caption{Differential measurements: high temperature calibration, low temperature measurements.}
-\label{fig:mhisthl}
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{chtmht.pdf}
+\caption{Difference between the LUT contents from startup calibration and the values computed by online calibration.}
+\label{fig:chtmht}
 \end{figure}
 
 \section{Conclusions}
