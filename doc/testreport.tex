@@ -12,11 +12,12 @@
 \usepackage{moreverb}
 \usepackage{url}
 \usepackage{tabularx}
+\usepackage{float}
 \usepackage{tweaklist}
 \renewcommand{\itemhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
 \renewcommand{\enumhook}{\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}}
 
-\title{TDC core test report}
+\title{TDC Core Test Report}
 \author{S\'ebastien Bourdeauducq}
 \date{November 2011}
 \begin{document}
@@ -74,11 +75,11 @@ g\_FTIMER\_WIDTH & 14 \\
 
 To minimize variations of the timing properties between runs of the automated place and route tool and to maximize thermal coupling between each delay line and its online calibration oscillator, the design is floorplanned.
 
-The two delay lines from each channel are placed close to their respective IOBs. Because of their large height, there are few FPGA columns that can accomodate them, and they accidentally ended up close to each other. The ring oscillator components are placed in the SLICEX columns just at the right of the delay lines, and spread evenly along the height of the delay line. This is illustrated by Figure \ref{fig:floorplan}, where the delay line is colored in pink and the ring oscillator is yellow.
+The two delay lines from each channel are placed close to their respective IOBs. Because of their large height, there are few FPGA columns that can accomodate them, and they accidentally ended up close to each other. The ring oscillator components are placed in the SLICEX columns just at the right of the delay lines, and spread evenly along the height of the delay lines. This is illustrated by Figure \ref{fig:floorplan}, where the delay lines are colored pink and the ring oscillators are yellow.
 
 In the UCF file, this is achieved by manually placing the first CARRY4 primitive in each delay line. Since carry chains can only be placed in columns, this determines the placement for the complete delay line. For the ring oscillators, a Python script generates one placement constraint for each element.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=1.6cm]{floorplan.png}
 \caption{Floorplan of the delay lines and ring oscillators in FPGA Editor.}
@@ -87,7 +88,9 @@ In the UCF file, this is achieved by manually placing the first CARRY4 primitive
 
 In the input signal path, there are one multiplexer and one inverter per channel. Everything is packed into one FPGA slice, which is also manually placed to minimize timing variations. The physical input signal path can be seen in Figure \ref{fig:inputpath}. The LVDS IOBs are represented in blue, and the routing and the slice in green.
 
-\begin{figure}[h]
+A limitation of this TDC design is that it does not compensate for PVT variations in the input signal path elements.
+
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{input_routes.png}
 \caption{Input signal path in FPGA Editor.}
 \label{fig:inputpath}
@@ -152,50 +155,84 @@ diff & In a loop, waits for a TDC event to happen in both channels, and displays
 
 \section{Methods and results}
 
-\subsection{Temperature measurement with ring oscillators}
+\subsection{Effect of temperature on ring oscillators}
 \label{sec:rofreq}
 
-\begin{figure}[h]
+The purpose of this experiment is to examine how temperature affects propagation delays. We used the ``rofreq'' command and slowly heated the FPGA to obtain the plot of Figure \ref{fig:rofreq}.
+
+The frequency values are directly reported from the TDC core, and are measured in cycles per frequency counter period.
+
+As expected, the frequencies decrease linearly with the temperature, and the two channels follow a near-identical pattern. The variation is small: about 1.3\% for the 15\degree C difference. However, near the end of the delay line, a 1.3\% variation represents about 100ps, so it is important to compensate for the effects of temperature.
+
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{rofreq.pdf}
 \caption{Dependence of ring oscillator frequencies on temperature.}
 \label{fig:rofreq}
 \end{figure}
 
 \subsection{Startup calibration stability}
-Temperature is 37\degree C.
+The startup calibration process relies on an asynchronous clock source which generates TDC events with a uniform random distribution within the system clock cycles. We wanted to verify that the process is deterministic enough.
 
-\begin{figure}[h]
+With the FPGA in thermal equilibrium,\footnote{This takes several minutes after the bitstream has been loaded.} we ran the startup calibration twice and compared the resulting LUT contents. The difference is plotted in Figure \ref{fig:scs}, and is small enough.
+
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{scs.pdf}
 \caption{Difference between the LUT contents from two startup calibrations at the same temperature.}
 \label{fig:scs}
 \end{figure}
 
-\subsection{Differential TDC}
+\subsection{Differential measurements}
+The purpose of this test is to determine the precision of the system.
 
-Temperature is 36.9375\degree C
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{mhist.pdf}
-\caption{Differential measurements}
-\label{fig:mhistll}
+We connected the oscillator output of the FMC DIO card to a splitter feeding two cables of different lengths\footnote{Those cables had propagation delays of approximately 2ns and 4ns.} going to the two TDC channels. We then observed the difference between the two TDC timestamps, which is expected to remain constant (Figure \ref{fig:dtdc}). Since the oscillator is asynchronous to the system clock, the complete delay line can be covered and tested.
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{dtdc.pdf}
+\caption{Principle of differential measurements.}
+\label{fig:dtdc}
 \end{figure}
 
+The advantage of this technique is that it is easy to set up and does not require expensive equipment. A limitation is that the result is not affected by common-mode noise of the input path to the delay line (Figure \ref{fig:inputpath}).
+
+We made the measurements at thermal equilibrium, with the sensor measuring 36.9375\degree C. The histogram of the results is shown in Figure \ref{fig:mhist}.
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{mhist.pdf}
+\caption{Differential measurement results.}
+\label{fig:mhist}
+\end{figure}
+
+The results can be modeled with a Gaussian distribution having a mean of 2221ps (which is close to the 4ns-2ns difference in propagation times from the cables) and a standard deviation of 37ps. If we suppose that the jitter in each channel is independent and also has a Gaussian distribution, we can estimate that its standard deviation is 26ps. This means that for one channel, 95\% of the results are precise to $\pm$52ps.
+
+\textit{Note that we obtained these results using only the TDC events from falling edges. The rising edges show a number of discrepancies that we believe to originate from signal integrity issues --- the impedances were not matched in our setup. These problems vanished when we tried routing the measurement signal path within the FPGA instead of going off-chip.}
+
 \subsection{Temperature compensation}
-Even though the influence of temperature is small (\ref{sec:rofreq}), we can still see the action of the online calibration.
+Even though the influence of temperature is small (\S \ref{sec:rofreq}), we can still see the positive action of the online calibration.
 
-We brought the temperature to from 37\degree C to 47.875\degree C, and ran startup calibration again. We observed a significant difference between the LUT contents (figure \ref{fig:chtmlt}).
+After calibrating at 37\degree C, we brought the temperature to 47.875\degree C, and ran startup calibration again. We observed a significant difference between the LUT contents (figure \ref{fig:chtmlt}).
 
-\begin{figure}[h]
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{chtmlt.pdf}
 \caption{Difference between the LUT contents from two startup calibrations at high and low temperatures.}
 \label{fig:chtmlt}
 \end{figure}
 
-\begin{figure}[h]
+The new LUT data are very close to what had been extrapolated from the 37\degree C data by the online calibration system (Figure \ref{fig:chtmht}). In fact, in this sample the difference is slightly smaller than what we had observed between two startup calibrations at the same temperature (Figure \ref{fig:scs}). This shows the good working of the online calibration system.
+
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{chtmht.pdf}
 \caption{Difference between the LUT contents from startup calibration and the values computed by online calibration.}
 \label{fig:chtmht}
 \end{figure}
 
-\section{Conclusions}
+\section{Final remarks}
+With our system, we can expect a precision of $\pm$52ps for 95\% of the measurements. There are however several areas of improvement:
+\begin{itemize}
+\item Examining the startup calibration histograms reveals that almost half of the bin widths are zero. This is due to the particular propagation characteristics of carry chains, which are not the best solution for a delay line (their advantage, however, is that it is relatively easy to keep the exact same delays between runs of the place-and-route tool). It can make sense to use regular LUTs and/or general routing to implement the delay line instead, at the cost of increased design difficulty and reduced portability.
+\item The carry chain is very long and this restricts its possible placements and compatibility with smaller FPGAs. Using LUTs and/or routing would also alleviate this problem.
+\item There are no bins significantly larger than the others, so using ``wave union'' techniques is unlikely to lead to major improvements.
+\item Multiple delay lines can work in parallel and their outputs combined, in order to average errors out.
+\item The influence of the input path (Figure \ref{fig:inputpath}) was not thoroughly studied.
+\end{itemize}
 
 \end{document}

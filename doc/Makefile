@@ -26,7 +26,10 @@ testreport.pdf: testreport.tex rofreq.pdf scs.pdf mhist.pdf chtmlt.pdf chtmht.pd
 clean:
 	rm -f tdc.pdf tdc.aux tdc.log
 	rm -f rofreq.pdf
+	rm -f scs.pdf
 	rm -f mhist.pdf
+	rm -f chtmlt.pdf
+	rm -f chtmht.pdf
 	rm -f testreport.pdf testreport.aux testreport.log
 
 .PHONY: clean
