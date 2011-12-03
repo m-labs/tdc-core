@@ -18,8 +18,6 @@
 
 `include "setup.v"
 
-`define USE_FMC_DIO
-
 module system(
 	input clkin_p,
 	input clkin_n,
@@ -43,8 +41,7 @@ module system(
 	output [1:0] tdc_signal_oe_n,
 	output [1:0] tdc_signal_term_en,
 	input [1:0] tdc_signal_p,
-	input [1:0] tdc_signal_n,
-	inout dummy // unconnected FPGA pad
+	input [1:0] tdc_signal_n
 );
 
 //------------------------------------------------------------------
@@ -516,10 +513,10 @@ tdc_ringosc #(
 	.en_i(~sys_rst),
 	.clk_o(cal_clk16x)
 );
-reg [22:0] cal_clkdiv;
+reg [18:0] cal_clkdiv;
 always @(posedge cal_clk16x) cal_clkdiv <= cal_clkdiv + 4'd1;
 assign cal_clk = cal_clkdiv[3];
-assign test_clk = cal_clkdiv[22];
+assign test_clk = cal_clkdiv[18];
 
 assign tdc_calib = {2{cal_clk}};
 
@@ -536,33 +533,14 @@ assign tdc_signal_term_en[0] = 1'b1;
 IBUFDS ibuf_tdc_signal0(
 	.I(tdc_signal_p[0]),
 	.IB(tdc_signal_n[0]),
-`ifdef USE_FMC_DIO
 	.O(tdc_signal[0])
-`else
-	.O()
-`endif
 );
 assign tdc_signal_oe_n[1] = 1'b1;
-assign tdc_signal_term_en[1] = 1'b1;
+assign tdc_signal_term_en[1] = 1'b0;
 IBUFDS ibuf_tdc_signal1(
 	.I(tdc_signal_p[1]),
 	.IB(tdc_signal_n[1]),
-`ifdef USE_FMC_DIO
 	.O(tdc_signal[1])
-`else
-	.O()
-`endif
 );
-
-`ifndef USE_FMC_DIO
-wire test_clk_delayed;
-IOBUF d(
-	.T(1'b0),
-	.I(test_clk),
-	.O(test_clk_delayed),
-	.IO(dummy)
-);
-assign tdc_signal = {test_clk, test_clk_delayed};
-`endif
 
 endmodule

@@ -28,8 +28,6 @@ NET "test_clk_oe_n" LOC = V17 | IOSTANDARD = "LVCMOS25";
 NET "test_clk_p" LOC = W17 | IOSTANDARD = "LVDS_25";
 NET "test_clk_n" LOC = Y18 | IOSTANDARD = "LVDS_25";
 
-NET "dummy" LOC = AA10 | IOSTANDARD = "LVCMOS25";
-
 NET "tdc_signal_oe_n[0]" LOC = Y14 | IOSTANDARD = "LVCMOS25";
 NET "tdc_signal_term_en[0]" LOC = AB5 | IOSTANDARD = "LVCMOS25";
 NET "tdc_signal_p[0]" LOC = R11 | IOSTANDARD = "LVDS_25";
